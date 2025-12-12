@@ -112,7 +112,7 @@
             <button onclick="enterPin(7)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">7</button>
             <button onclick="enterPin(8)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">8</button>
             <button onclick="enterPin(9)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">9</button>
-            <div></div>
+            <div class="flex items-center justify-center"><button onclick="emergencyReset()" class="text-[10px] text-red-500 font-bold opacity-50 hover:opacity-100">LUPA<br>PIN?</button></div>
             <button onclick="enterPin(0)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">0</button>
             <button onclick="clearPin()" class="w-16 h-16 flex items-center justify-center text-xl"><i class="fa-solid fa-delete-left"></i></button>
         </div>
@@ -376,6 +376,14 @@
                 if(old) appData = { ...appData, ...JSON.parse(old) };
             }
             
+            // --- SECURITY FIX: Auto Sanitization ---
+            // Kalau PIN-nya aneh (bukan string 4 digit), kita hapus biar ga kekunci
+            if (appData.settings.pin && (typeof appData.settings.pin !== 'string' || appData.settings.pin.length !== 4)) {
+                console.warn("Invalid PIN detected, resetting to null");
+                appData.settings.pin = null;
+                saveData();
+            }
+
             applyTheme(appData.settings.theme);
             if(appData.settings.pin) showLockScreen();
             else renderAll();
@@ -405,6 +413,13 @@
             if(newPin && newPin.length === 4 && !isNaN(newPin)) {
                 appData.settings.pin = newPin; saveData(); alert("PIN Aktif!");
             } else alert("PIN harus 4 angka!");
+        }
+        
+        function emergencyReset() {
+            if(confirm("LUPA PIN? Reset semua data aplikasi agar bisa masuk kembali? Data akan hilang permanen.")) {
+                localStorage.clear();
+                location.reload();
+            }
         }
 
         function saveData() { localStorage.setItem('iFinanceUltra', JSON.stringify(appData)); updateSummary(); updateAnalytics(); }
