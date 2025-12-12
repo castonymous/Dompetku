@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>iFinance Ultimate</title>
+    <title>iFinance Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -16,7 +16,7 @@
             color: white;
             overflow-x: hidden;
             -webkit-tap-highlight-color: transparent;
-            padding-bottom: 120px; /* Space for dock */
+            padding-bottom: 110px;
         }
 
         /* Fluid Background */
@@ -48,15 +48,16 @@
             transition: all 0.2s;
         }
         .glass-card:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.1); }
+        
         .glass-input {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.1);
             color: white;
             width: 100%;
         }
-        .glass-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.3); background: rgba(0, 0, 0, 0.5); }
+        .glass-input:focus { outline: none; border-color: rgba(96, 165, 250, 0.5); background: rgba(0, 0, 0, 0.6); }
 
-        /* Sub-tab Switcher */
+        /* Segment Control */
         .segment-control {
             background: rgba(0,0,0,0.3);
             padding: 4px;
@@ -82,19 +83,19 @@
 
         /* Bottom Dock */
         .dock {
-            background: rgba(20, 20, 20, 0.85);
+            background: rgba(20, 20, 20, 0.9);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            padding-bottom: max(15px, env(safe-area-inset-bottom));
         }
         .nav-item { transition: all 0.3s; opacity: 0.5; }
         .nav-item.active { opacity: 1; transform: translateY(-2px); }
         .nav-item.active i { color: #60a5fa; text-shadow: 0 0 10px rgba(96, 165, 250, 0.6); }
-        
-        /* Utils */
+
+        /* Utilities */
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .text-shadow { text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
@@ -105,60 +106,79 @@
     <header class="sticky top-0 z-40 pt-4 pb-2 px-5 glass-panel border-t-0 border-x-0 rounded-b-3xl mb-4">
         <div class="flex justify-between items-center mb-4">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
                     <i class="fa-brands fa-apple text-xl"></i>
                 </div>
                 <div>
                     <h1 class="font-bold text-lg tracking-tight">iFinance</h1>
-                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">Ultimate Edition</p>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">Pro Edition</p>
                 </div>
             </div>
             <div class="text-right">
                 <p class="text-gray-400 text-xs mb-1">Total Net Worth</p>
-                <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300" id="header-net-worth">Rp 0</h2>
+                <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300" id="header-net-worth">Rp 0</h2>
             </div>
         </div>
     </header>
 
-    <main class="px-5 min-h-screen">
+    <main class="px-4 min-h-screen">
 
         <!-- VIEW: DASHBOARD -->
         <div id="view-dashboard" class="space-y-4 animate-fade-in">
-            <!-- Summary Grid -->
+            
+            <!-- Quick Actions (New) -->
+            <div class="flex gap-3 mb-2">
+                <button onclick="openTransactionModal('in')" class="flex-1 bg-emerald-600/20 border border-emerald-500/30 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-600/30 active:scale-95 transition">
+                    <div class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs"><i class="fa-solid fa-arrow-down"></i></div>
+                    <span class="text-sm font-bold text-emerald-100">Pemasukan</span>
+                </button>
+                <button onclick="openTransactionModal('out')" class="flex-1 bg-rose-600/20 border border-rose-500/30 py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-rose-600/30 active:scale-95 transition">
+                    <div class="w-6 h-6 rounded-full bg-rose-500 flex items-center justify-center text-white text-xs"><i class="fa-solid fa-arrow-up"></i></div>
+                    <span class="text-sm font-bold text-rose-100">Pengeluaran</span>
+                </button>
+            </div>
+
+            <!-- Asset Grid -->
             <div class="grid grid-cols-2 gap-3">
-                <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-28 relative overflow-hidden group" onclick="switchTab('cash')">
-                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-emerald-500/20 rounded-full blur-xl"></div>
-                    <i class="fa-solid fa-money-bill-wave text-emerald-400 text-2xl mb-2"></i>
-                    <div><p class="text-xs text-gray-400">Cash Fisik</p><p class="font-bold text-lg" id="dash-cash">Rp 0</p></div>
+                <div class="glass-card p-3 rounded-2xl h-24 relative overflow-hidden group" onclick="switchTab('cash')">
+                    <div class="absolute -right-2 -bottom-2 text-6xl text-emerald-500/10"><i class="fa-solid fa-money-bill"></i></div>
+                    <p class="text-xs text-gray-400">Cash Fisik</p>
+                    <p class="font-bold text-lg mt-1" id="dash-cash">Rp 0</p>
                 </div>
-                
-                <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-28 relative overflow-hidden group" onclick="switchTab('assets')">
-                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"></div>
-                    <i class="fa-solid fa-wallet text-blue-400 text-2xl mb-2"></i>
-                    <div><p class="text-xs text-gray-400">Dompet & Bank</p><p class="font-bold text-lg" id="dash-wallet">Rp 0</p></div>
+                <div class="glass-card p-3 rounded-2xl h-24 relative overflow-hidden group" onclick="switchTab('assets')">
+                    <div class="absolute -right-2 -bottom-2 text-6xl text-blue-500/10"><i class="fa-solid fa-wallet"></i></div>
+                    <p class="text-xs text-gray-400">Aset Digital</p>
+                    <p class="font-bold text-lg mt-1" id="dash-wallet">Rp 0</p>
                 </div>
-
-                <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-28 relative overflow-hidden group" onclick="switchTab('assets', 'invest')">
-                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-purple-500/20 rounded-full blur-xl"></div>
-                    <i class="fa-solid fa-chart-line text-purple-400 text-2xl mb-2"></i>
-                    <div><p class="text-xs text-gray-400">Investasi</p><p class="font-bold text-lg" id="dash-invest">Rp 0</p></div>
+                <div class="glass-card p-3 rounded-2xl h-24 relative overflow-hidden group" onclick="switchTab('assets', 'invest')">
+                    <div class="absolute -right-2 -bottom-2 text-6xl text-purple-500/10"><i class="fa-solid fa-chart-pie"></i></div>
+                    <p class="text-xs text-gray-400">Investasi</p>
+                    <p class="font-bold text-lg mt-1" id="dash-invest">Rp 0</p>
                 </div>
-
-                <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-28 relative overflow-hidden group" onclick="switchTab('social')">
-                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-orange-500/20 rounded-full blur-xl"></div>
-                    <i class="fa-solid fa-hand-holding-dollar text-orange-400 text-2xl mb-2"></i>
-                    <div><p class="text-xs text-gray-400">Piutang</p><p class="font-bold text-lg" id="dash-receivable">Rp 0</p></div>
+                <div class="glass-card p-3 rounded-2xl h-24 relative overflow-hidden group" onclick="switchTab('social')">
+                    <div class="absolute -right-2 -bottom-2 text-6xl text-orange-500/10"><i class="fa-solid fa-handshake"></i></div>
+                    <p class="text-xs text-gray-400">Piutang</p>
+                    <p class="font-bold text-lg mt-1" id="dash-receivable">Rp 0</p>
                 </div>
             </div>
 
-            <!-- Top Target Teaser -->
-            <div class="glass-card p-4 rounded-2xl mt-4" onclick="switchTab('target')">
-                <div class="flex justify-between items-center mb-2">
-                    <h3 class="font-bold text-gray-200"><i class="fa-solid fa-bullseye text-red-400 mr-2"></i>Fokus Target</h3>
-                    <i class="fa-solid fa-chevron-right text-xs text-gray-500"></i>
+            <!-- Total Kondangan (Display Only) -->
+            <div class="glass-card p-3 rounded-2xl flex justify-between items-center" onclick="switchTab('social', 'gift')">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400"><i class="fa-solid fa-envelope-open-text"></i></div>
+                    <div>
+                        <p class="text-xs text-gray-400">Total Amplop Keluar</p>
+                        <p class="font-bold text-pink-200" id="dash-gifts">Rp 0</p>
+                    </div>
                 </div>
-                <div id="dash-target-content">
-                    <p class="text-xs text-gray-500">Belum ada target impian.</p>
+                <i class="fa-solid fa-chevron-right text-xs text-gray-600"></i>
+            </div>
+
+            <!-- Recent Transactions Teaser -->
+            <div class="mt-4">
+                <h3 class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Mutasi Terakhir</h3>
+                <div id="dashboard-transactions" class="space-y-2">
+                    <!-- JS Injected -->
                 </div>
             </div>
         </div>
@@ -170,10 +190,12 @@
                  <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Fisik</p>
                  <h2 class="text-3xl font-bold text-emerald-300" id="calc-total">Rp 0</h2>
             </div>
-            <div class="space-y-3" id="money-inputs"></div>
+            <div class="space-y-2" id="money-inputs">
+                <!-- Cleaner Layout via JS -->
+            </div>
         </div>
 
-        <!-- VIEW: ASSETS (Wallet & Invest) -->
+        <!-- VIEW: ASSETS -->
         <div id="view-assets" class="hidden space-y-5">
             <div class="segment-control">
                 <button onclick="switchAssetTab('wallet')" id="seg-wallet" class="segment-btn active">Dompet / Bank</button>
@@ -183,7 +205,7 @@
             <!-- Tab: Wallet -->
             <div id="asset-wallet-view" class="space-y-4">
                 <div class="flex justify-between items-center px-1">
-                    <p class="text-xs text-gray-400">Saldo cair (Liquid)</p>
+                    <p class="text-xs text-gray-400">Liquid Assets</p>
                     <button onclick="openModal('wallet')" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:scale-110 transition"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div id="wallet-list" class="space-y-3"></div>
@@ -192,7 +214,7 @@
             <!-- Tab: Invest -->
             <div id="asset-invest-view" class="hidden space-y-4">
                 <div class="flex justify-between items-center px-1">
-                    <p class="text-xs text-gray-400">Aset berkembang</p>
+                    <p class="text-xs text-gray-400">Growth Assets</p>
                     <button onclick="openModal('invest')" class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white hover:scale-110 transition"><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <div id="invest-list" class="space-y-3"></div>
@@ -202,37 +224,31 @@
         <!-- VIEW: TARGETS -->
         <div id="view-target" class="hidden space-y-5">
             <div class="glass-panel p-4 rounded-2xl flex justify-between items-center">
-                <div>
-                    <h3 class="font-bold">Target Impian</h3>
-                    <p class="text-xs text-gray-400">Tabung demi masa depan</p>
-                </div>
-                <button onclick="openModal('target')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition">+ Target</button>
+                <div><h3 class="font-bold">Target Impian</h3><p class="text-xs text-gray-400">Goals</p></div>
+                <button onclick="openModal('target')" class="bg-white/10 px-4 py-2 rounded-lg text-sm font-semibold hover:bg-white/20">+ Target</button>
             </div>
-            
             <div id="target-list" class="space-y-4 pb-10"></div>
         </div>
 
         <!-- VIEW: SOCIAL -->
         <div id="view-social" class="hidden space-y-5">
             <div class="segment-control">
-                <button onclick="switchSocialTab('debt')" id="seg-debt" class="segment-btn active">Hutang / Piutang</button>
+                <button onclick="switchSocialTab('debt')" id="seg-debt" class="segment-btn active">Hutang</button>
                 <button onclick="switchSocialTab('gift')" id="seg-gift" class="segment-btn">Kondangan</button>
             </div>
 
-            <!-- Tab: Debt -->
             <div id="social-debt-view" class="space-y-4">
                 <div class="flex justify-between items-center px-1">
-                    <p class="text-xs text-gray-400">Manajemen pinjaman</p>
-                    <button onclick="openModal('debt')" class="bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/20 transition">+ Catat</button>
+                    <p class="text-xs text-gray-400">Catatan Pinjaman</p>
+                    <button onclick="openModal('debt')" class="bg-white/10 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/20">+ Catat</button>
                 </div>
                 <div id="debt-list" class="space-y-3"></div>
             </div>
 
-            <!-- Tab: Gift -->
             <div id="social-gift-view" class="hidden space-y-4">
                 <div class="flex justify-between items-center px-1">
-                    <p class="text-xs text-gray-400">Riwayat amplop keluar</p>
-                    <button onclick="openModal('gift')" class="bg-purple-500/20 text-purple-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-purple-500/30 transition">+ Amplop</button>
+                    <p class="text-xs text-gray-400">Amplop Keluar</p>
+                    <button onclick="openModal('gift')" class="bg-pink-500/20 text-pink-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-pink-500/30">+ Amplop</button>
                 </div>
                 <div id="gift-list" class="space-y-3"></div>
             </div>
@@ -240,35 +256,35 @@
 
     </main>
 
-    <!-- DOCK NAVIGATION (5 ITEMS) -->
+    <!-- DOCK NAVIGATION -->
     <nav class="dock fixed bottom-0 left-0 right-0 px-2 pt-3 flex justify-around items-center z-50 rounded-t-3xl">
-        <button onclick="switchTab('dashboard')" class="nav-item active flex flex-col items-center gap-1 w-1/5 text-gray-500" id="nav-dashboard">
+        <button onclick="switchTab('dashboard')" class="nav-item active flex flex-col items-center gap-1 w-1/5" id="nav-dashboard">
             <i class="fa-solid fa-house text-xl"></i><span class="text-[10px] font-medium">Home</span>
         </button>
-        <button onclick="switchTab('cash')" class="nav-item flex flex-col items-center gap-1 w-1/5 text-gray-500" id="nav-cash">
+        <button onclick="switchTab('cash')" class="nav-item flex flex-col items-center gap-1 w-1/5" id="nav-cash">
             <i class="fa-solid fa-money-bill text-xl"></i><span class="text-[10px] font-medium">Cash</span>
         </button>
-        <button onclick="switchTab('assets')" class="nav-item flex flex-col items-center gap-1 w-1/5 text-gray-500" id="nav-assets">
+        <button onclick="switchTab('assets')" class="nav-item flex flex-col items-center gap-1 w-1/5" id="nav-assets">
             <i class="fa-solid fa-wallet text-xl"></i><span class="text-[10px] font-medium">Aset</span>
         </button>
-        <button onclick="switchTab('target')" class="nav-item flex flex-col items-center gap-1 w-1/5 text-gray-500" id="nav-target">
+        <button onclick="switchTab('target')" class="nav-item flex flex-col items-center gap-1 w-1/5" id="nav-target">
             <i class="fa-solid fa-bullseye text-xl"></i><span class="text-[10px] font-medium">Target</span>
         </button>
-        <button onclick="switchTab('social')" class="nav-item flex flex-col items-center gap-1 w-1/5 text-gray-500" id="nav-social">
+        <button onclick="switchTab('social')" class="nav-item flex flex-col items-center gap-1 w-1/5" id="nav-social">
             <i class="fa-solid fa-users text-xl"></i><span class="text-[10px] font-medium">Sosial</span>
         </button>
     </nav>
 
-    <!-- UNIVERSAL MODAL -->
+    <!-- MASTER MODAL (Universal) -->
     <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[60] flex items-end sm:items-center justify-center">
-        <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 transform transition-transform duration-300">
+        <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 transform transition-transform duration-300 scale-100">
             <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-6"></div>
             <h3 class="text-xl font-bold mb-4" id="modal-title">Form</h3>
             
-            <div class="space-y-3 max-h-[70vh] overflow-y-auto no-scrollbar">
+            <div class="space-y-4 max-h-[70vh] overflow-y-auto no-scrollbar">
                 
                 <!-- Field: Debt Type -->
-                <div id="field-debt-type" class="hidden mb-4">
+                <div id="field-debt-type" class="hidden mb-2">
                     <div class="grid grid-cols-2 gap-2">
                         <label class="cursor-pointer">
                             <input type="radio" name="debtType" value="lent" class="peer sr-only" checked>
@@ -286,7 +302,7 @@
                 </div>
 
                 <!-- Field: Name -->
-                <div>
+                <div id="field-name">
                     <label class="text-xs text-gray-400 uppercase" id="label-name">Nama</label>
                     <input type="text" id="modal-name" class="glass-input p-3 rounded-xl mt-1" placeholder="Isi nama...">
                 </div>
@@ -301,8 +317,8 @@
 
                 <!-- Field: Target Goal -->
                 <div id="field-target-goal" class="hidden">
-                    <label class="text-xs text-gray-400 uppercase">Target Harga (Rp)</label>
-                    <input type="number" id="modal-goal-amount" class="glass-input p-3 rounded-xl mt-1" placeholder="0">
+                    <label class="text-xs text-gray-400 uppercase">Target Harga</label>
+                    <input type="text" inputmode="numeric" id="modal-goal-amount" class="glass-input p-3 rounded-xl mt-1" placeholder="0" oninput="formatInput(this)">
                 </div>
 
                 <!-- Field: Contact -->
@@ -310,10 +326,6 @@
                     <div>
                         <label class="text-xs text-gray-400 uppercase">No HP (WA)</label>
                         <input type="tel" id="modal-phone" class="glass-input p-3 rounded-xl mt-1" placeholder="0812...">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 uppercase">Info Lain</label>
-                        <input type="text" id="modal-social" class="glass-input p-3 rounded-xl mt-1" placeholder="Opsional">
                     </div>
                 </div>
 
@@ -324,30 +336,63 @@
                 </div>
 
                 <!-- Field: Amount -->
-                <div>
-                    <label class="text-xs text-gray-400 uppercase" id="label-amount">Nominal / Saldo (Rp)</label>
-                    <input type="number" id="modal-amount" class="glass-input p-3 rounded-xl mt-1" placeholder="0">
+                <div id="field-amount">
+                    <label class="text-xs text-gray-400 uppercase" id="label-amount">Nominal (Rp)</label>
+                    <input type="text" inputmode="numeric" id="modal-amount" class="glass-input p-3 rounded-xl mt-1 font-bold text-lg" placeholder="0" oninput="formatInput(this)">
                 </div>
 
                 <div class="flex gap-3 mt-6">
                     <button onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300">Batal</button>
-                    <button onclick="saveModalData()" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/30">Simpan</button>
+                    <button onclick="saveModalData()" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/30" id="btn-save-modal">Simpan</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- TARGET ACTION MODAL (Nabung/Edit) -->
-    <div id="target-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[65] flex items-end sm:items-center justify-center">
+    <!-- TRANSACTION MODAL (New) -->
+    <div id="trx-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[65] flex items-end sm:items-center justify-center">
+        <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6">
+            <h3 class="text-lg font-bold mb-4" id="trx-title">Transaksi</h3>
+            
+            <div class="space-y-4">
+                <!-- Source Selector -->
+                <div>
+                    <label class="text-xs text-gray-400 uppercase">Sumber Dana</label>
+                    <select id="trx-source" class="glass-input p-3 rounded-xl mt-1 bg-black text-white">
+                        <option value="cash">Cash (Uang Fisik)</option>
+                        <!-- Accounts filled by JS -->
+                    </select>
+                    <p class="text-[10px] text-gray-500 mt-1" id="trx-hint">*Saldo akun akan berkurang/bertambah otomatis. Cash hanya dicatat.</p>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-400 uppercase">Keterangan</label>
+                    <input type="text" id="trx-note" class="glass-input p-3 rounded-xl mt-1" placeholder="cth: Beli Kopi / Gaji">
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-400 uppercase">Nominal</label>
+                    <input type="text" inputmode="numeric" id="trx-amount" class="glass-input p-3 rounded-xl mt-1 font-bold text-lg" placeholder="0" oninput="formatInput(this)">
+                </div>
+
+                <div class="flex gap-3 mt-4">
+                    <button onclick="closeTrxModal()" class="flex-1 py-3 rounded-xl bg-white/10 text-gray-400">Batal</button>
+                    <button onclick="saveTransaction()" class="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold" id="btn-save-trx">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TARGET ACTION MODAL -->
+    <div id="target-action-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[65] flex items-end sm:items-center justify-center">
         <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6">
              <h3 class="text-lg font-bold mb-2" id="action-target-name">Target</h3>
-             <p class="text-xs text-gray-400 mb-4">Tambah tabungan untuk target ini</p>
-             <input type="number" id="action-amount" class="glass-input p-3 rounded-xl mb-4" placeholder="Jumlah Nabung">
+             <input type="text" inputmode="numeric" id="action-amount" class="glass-input p-3 rounded-xl mb-4" placeholder="Jumlah Nabung" oninput="formatInput(this)">
              <div class="grid grid-cols-2 gap-3">
-                 <button onclick="deleteTarget()" class="py-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30">Hapus Target</button>
-                 <button onclick="saveTargetProgress()" class="py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 shadow-lg shadow-emerald-500/30">Nabung</button>
+                 <button onclick="deleteItem('targets', activeTargetId)" class="py-3 rounded-xl bg-red-500/20 text-red-400">Hapus</button>
+                 <button onclick="saveTargetProgress()" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">Nabung</button>
              </div>
-             <button onclick="document.getElementById('target-modal').classList.add('hidden')" class="w-full mt-3 py-2 text-gray-500 text-sm">Batal</button>
+             <button onclick="document.getElementById('target-action-modal').classList.add('hidden')" class="w-full mt-3 py-2 text-gray-500 text-sm">Batal</button>
         </div>
     </div>
 
@@ -355,11 +400,16 @@
         // --- DATA STATE ---
         let appData = {
             cash: {}, 
-            accounts: [], // type: 'wallet', 'bank' (Digital) OR 'stock', 'crypto', 'gold' (Invest)
-            targets: [],  // { id, name, current, goal }
-            debts: [],    // { id, type: 'lent'|'borrowed', ... }
-            gifts: []
+            accounts: [], 
+            targets: [], 
+            debts: [], 
+            gifts: [],
+            transactions: [] // New: Log History
         };
+
+        let editingId = null; // For Edit Mode
+        let activeTargetId = null;
+        let trxType = 'out'; // 'in' or 'out'
 
         const denominations = [
             { val: 100000, type: 'paper', label: '100K' }, { val: 50000, type: 'paper', label: '50K' },
@@ -372,37 +422,51 @@
 
         // --- INIT ---
         function init() {
-            // Merge old data structure if needed
-            const saved = localStorage.getItem('iFinanceUltimate');
-            // Check previous keys to migrate if user comes from older versions
+            const saved = localStorage.getItem('iFinancePro');
             if (saved) {
                 appData = JSON.parse(saved);
+                if(!appData.transactions) appData.transactions = []; // migration
             } else {
-                // Try migration from older localstorage keys
-                const social = localStorage.getItem('iFinanceSocial');
-                const glass = localStorage.getItem('iFinanceData');
-                if(social) {
-                    const old = JSON.parse(social);
-                    appData = { ...appData, ...old };
-                } else if(glass) {
-                    const old = JSON.parse(glass);
-                    appData = { ...appData, ...old };
-                }
+                // Try legacy migration
+                const old = localStorage.getItem('iFinanceUltimate');
+                if(old) appData = { ...appData, ...JSON.parse(old) };
             }
             
             document.getElementById('modal-date').valueAsDate = new Date();
 
             renderCalculator();
-            renderAssets(); // Handles both Wallet & Invest
+            renderAssets();
             renderTargets();
             renderDebts();
             renderGifts();
+            renderDashboardTrx();
             updateSummary();
         }
 
         function saveData() {
-            localStorage.setItem('iFinanceUltimate', JSON.stringify(appData));
+            localStorage.setItem('iFinancePro', JSON.stringify(appData));
             updateSummary();
+        }
+
+        // --- UI FORMATTERS ---
+        function formatInput(input) {
+            // Remove non-digit characters
+            let val = input.value.replace(/\D/g, '');
+            if (val === '') {
+                input.value = '';
+                return;
+            }
+            // Add dots
+            input.value = new Intl.NumberFormat('id-ID').format(val);
+        }
+
+        function getRawValue(inputOrId) {
+            const el = typeof inputOrId === 'string' ? document.getElementById(inputOrId) : inputOrId;
+            return parseInt(el.value.replace(/\./g, '')) || 0;
+        }
+
+        function formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
         }
 
         // --- NAVIGATION ---
@@ -414,9 +478,8 @@
             document.getElementById(`view-${viewName}`).classList.remove('hidden');
             document.getElementById(`nav-${viewName}`).classList.add('active');
 
-            if (viewName === 'assets' && subTab) {
-                switchAssetTab(subTab);
-            }
+            if (viewName === 'assets' && subTab) switchAssetTab(subTab);
+            else if (viewName === 'social' && subTab) switchSocialTab(subTab);
         }
 
         function switchAssetTab(tab) {
@@ -424,7 +487,6 @@
             document.getElementById('asset-invest-view').classList.add('hidden');
             document.getElementById('seg-wallet').classList.remove('active');
             document.getElementById('seg-invest').classList.remove('active');
-
             document.getElementById(`asset-${tab}-view`).classList.remove('hidden');
             document.getElementById(`seg-${tab}`).classList.add('active');
         }
@@ -434,117 +496,63 @@
             document.getElementById('social-gift-view').classList.add('hidden');
             document.getElementById('seg-debt').classList.remove('active');
             document.getElementById('seg-gift').classList.remove('active');
-
             document.getElementById(`social-${tab}-view`).classList.remove('hidden');
             document.getElementById(`seg-${tab}`).classList.add('active');
         }
 
         // --- RENDERERS ---
 
-        // 1. CASH
         function renderCalculator() {
             const container = document.getElementById('money-inputs');
             container.innerHTML = '';
             denominations.forEach(d => {
                 const key = `${d.val}-${d.type}`;
                 const count = appData.cash[key] || 0;
+                // NEW LAYOUT: Wider inputs, better spacing
                 container.innerHTML += `
-                    <div class="glass-card p-2 rounded-xl flex items-center gap-3">
-                        <div class="w-16 font-bold ${d.type === 'paper' ? 'text-emerald-400' : 'text-yellow-400'}">${d.label}</div>
-                        <button onclick="updateCash('${key}', -1)" class="w-8 h-8 rounded-lg bg-white/10">-</button>
-                        <input type="number" value="${count||''}" placeholder="0" class="flex-1 bg-transparent text-center font-bold text-white focus:outline-none" onchange="setCash('${key}', this.value)">
-                        <button onclick="updateCash('${key}', 1)" class="w-8 h-8 rounded-lg bg-white/10">+</button>
+                    <div class="glass-card p-3 rounded-xl flex items-center justify-between gap-3">
+                        <div class="flex flex-col w-20">
+                            <span class="font-bold ${d.type === 'paper' ? 'text-emerald-400' : 'text-yellow-400'} text-lg">${d.label}</span>
+                        </div>
+                        <div class="flex items-center gap-2 bg-black/30 rounded-lg p-1 flex-1">
+                            <button onclick="updateCash('${key}', -1)" class="w-10 h-10 rounded-lg bg-white/10 active:bg-white/20 font-bold">-</button>
+                            <input type="number" value="${count||''}" placeholder="0" class="flex-1 bg-transparent text-center font-bold text-white focus:outline-none text-lg min-w-0" onchange="setCash('${key}', this.value)">
+                            <button onclick="updateCash('${key}', 1)" class="w-10 h-10 rounded-lg bg-white/10 active:bg-white/20 font-bold">+</button>
+                        </div>
                     </div>`;
             });
             calculateCashTotal();
         }
 
-        // 2. ASSETS (Mixed)
         function renderAssets() {
             const walletList = document.getElementById('wallet-list');
             const investList = document.getElementById('invest-list');
-            walletList.innerHTML = '';
-            investList.innerHTML = '';
-            
-            let walletTotal = 0;
-            let investTotal = 0;
+            walletList.innerHTML = ''; investList.innerHTML = '';
+            let walletTotal = 0, investTotal = 0;
 
             appData.accounts.forEach(acc => {
                 const isInvest = ['stock','crypto','gold','invest'].includes(acc.type);
-                const icon = getIcon(acc.type, acc.name);
-                
                 const html = `
-                    <div class="glass-card p-4 rounded-xl flex justify-between items-center group">
+                    <div class="glass-card p-4 rounded-xl flex justify-between items-center group relative">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-lg">${icon}</div>
+                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-lg">${getIcon(acc.type, acc.name)}</div>
                             <div><p class="font-bold">${acc.name}</p><p class="text-xs text-gray-400 capitalize">${translateType(acc.type)}</p></div>
                         </div>
                         <div class="text-right">
                             <p class="font-bold ${isInvest ? 'text-purple-300' : 'text-blue-300'}">${formatRupiah(acc.balance)}</p>
-                            <button onclick="deleteItem('accounts', ${acc.id})" class="text-xs text-red-400 opacity-0 group-hover:opacity-100">Hapus</button>
+                            <div class="flex justify-end gap-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openModal('wallet', ${acc.id})" class="text-xs text-blue-400"><i class="fa-solid fa-pen"></i> Edit</button>
+                                <button onclick="deleteItem('accounts', ${acc.id})" class="text-xs text-red-400"><i class="fa-solid fa-trash"></i></button>
+                            </div>
                         </div>
                     </div>`;
-
-                if(isInvest) {
-                    investList.innerHTML += html;
-                    investTotal += acc.balance;
-                } else {
-                    walletList.innerHTML += html;
-                    walletTotal += acc.balance;
-                }
+                if(isInvest) { investList.innerHTML += html; investTotal += acc.balance; }
+                else { walletList.innerHTML += html; walletTotal += acc.balance; }
             });
-
             document.getElementById('dash-wallet').innerText = formatRupiah(walletTotal);
             document.getElementById('dash-invest').innerText = formatRupiah(investTotal);
         }
 
-        // 3. TARGETS
-        function renderTargets() {
-            const list = document.getElementById('target-list');
-            const dashContent = document.getElementById('dash-target-content');
-            list.innerHTML = '';
-            
-            if(appData.targets.length === 0) {
-                list.innerHTML = `<p class="text-center text-gray-500 text-xs mt-10">Mulai buat impian pertamamu!</p>`;
-                dashContent.innerHTML = `<p class="text-xs text-gray-500">Belum ada target.</p>`;
-                return;
-            }
-
-            appData.targets.forEach((t, index) => {
-                const percent = Math.min(100, (t.current / t.goal) * 100);
-                const isDone = percent >= 100;
-
-                const html = `
-                    <div class="glass-card p-4 rounded-xl cursor-pointer hover:bg-white/10" onclick="openTargetAction(${t.id})">
-                        <div class="flex justify-between items-end mb-2">
-                            <h4 class="font-bold truncate pr-4">${t.name}</h4>
-                            <span class="text-xs ${isDone ? 'text-emerald-400' : 'text-blue-400'} font-bold">${Math.round(percent)}%</span>
-                        </div>
-                        <div class="w-full bg-gray-700/50 h-2 rounded-full overflow-hidden mb-2">
-                            <div class="h-full ${isDone ? 'bg-emerald-500' : 'bg-gradient-to-r from-blue-500 to-purple-500'}" style="width: ${percent}%"></div>
-                        </div>
-                        <div class="flex justify-between text-[10px] text-gray-400">
-                            <span>Terkumpul: ${formatRupiah(t.current)}</span>
-                            <span>Target: ${formatRupiah(t.goal)}</span>
-                        </div>
-                    </div>`;
-                
-                list.innerHTML += html;
-
-                // Dashboard Teaser (Top 1)
-                if(index === 0) {
-                    dashContent.innerHTML = `
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-sm font-bold truncate">${t.name}</span>
-                            <span class="text-xs font-bold text-blue-400">${Math.round(percent)}%</span>
-                        </div>
-                        <div class="w-full bg-gray-700/50 h-1 rounded-full"><div class="h-full bg-blue-500" style="width: ${percent}%"></div></div>
-                    `;
-                }
-            });
-        }
-
-        // 4. SOCIAL (Debts & Gifts)
         function renderDebts() {
             const list = document.getElementById('debt-list');
             list.innerHTML = '';
@@ -553,14 +561,8 @@
             appData.debts.forEach(d => {
                 const isLent = d.type === 'lent';
                 if(isLent) receivableTotal += d.amount;
-                const dateStr = new Date(d.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
-                
-                // WA Link
-                let waBtn = '';
-                if(d.phone) {
-                    let cleanPhone = d.phone.replace(/^0/, '62').replace(/\D/g,'');
-                    waBtn = `<a href="https://wa.me/${cleanPhone}" target="_blank" class="w-8 h-8 rounded-full bg-green-600/20 flex items-center justify-center text-green-400"><i class="fa-brands fa-whatsapp"></i></a>`;
-                }
+                const dateStr = new Date(d.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                let waBtn = d.phone ? `<a href="https://wa.me/${d.phone.replace(/^0/, '62').replace(/\D/g,'')}" target="_blank" class="w-8 h-8 rounded-full bg-green-600/20 flex items-center justify-center text-green-400"><i class="fa-brands fa-whatsapp"></i></a>` : '';
 
                 list.innerHTML += `
                     <div class="glass-card p-4 rounded-xl flex flex-col gap-2 group relative overflow-hidden">
@@ -575,7 +577,10 @@
                             </div>
                             <div class="text-right">
                                 <p class="font-bold ${isLent ? 'text-emerald-400' : 'text-red-400'}">${formatRupiah(d.amount)}</p>
-                                <button onclick="deleteItem('debts', ${d.id})" class="text-xs text-red-400 mt-1 opacity-60 hover:opacity-100">Lunas/Hapus</button>
+                                <div class="flex justify-end gap-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button onclick="openModal('debt', ${d.id})" class="text-xs text-blue-400"><i class="fa-solid fa-pen"></i> Edit</button>
+                                    <button onclick="deleteItem('debts', ${d.id})" class="text-xs text-red-400"><i class="fa-solid fa-check"></i> Lunas</button>
+                                </div>
                             </div>
                         </div>
                         ${waBtn ? `<div class="flex justify-end pt-2 border-t border-white/10 mt-1 gap-2 items-center"><span class="text-[10px] text-gray-500">Tagih:</span> ${waBtn}</div>` : ''}
@@ -587,102 +592,244 @@
         function renderGifts() {
             const list = document.getElementById('gift-list');
             list.innerHTML = '';
+            let totalGifts = 0;
             appData.gifts.forEach(g => {
-                const dateStr = new Date(g.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+                totalGifts += g.amount;
+                const dateStr = new Date(g.date).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'});
                 list.innerHTML += `
-                    <div class="glass-card p-3 rounded-xl flex items-center gap-3 group">
-                        <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-300"><i class="fa-solid fa-gift"></i></div>
+                    <div class="glass-card p-3 rounded-xl flex items-center gap-3 group relative">
+                        <div class="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-300"><i class="fa-solid fa-gift"></i></div>
                         <div class="flex-1">
                             <p class="font-bold">${g.name}</p>
                             <p class="text-xs text-gray-400">${dateStr}</p>
                         </div>
                         <div class="text-right">
-                            <p class="font-bold text-purple-300">${formatRupiah(g.amount)}</p>
-                            <button onclick="deleteItem('gifts', ${g.id})" class="text-[10px] text-red-400 opacity-0 group-hover:opacity-100">Hapus</button>
+                            <p class="font-bold text-pink-300">${formatRupiah(g.amount)}</p>
+                            <div class="flex justify-end gap-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button onclick="openModal('gift', ${g.id})" class="text-xs text-blue-400">Edit</button>
+                                <button onclick="deleteItem('gifts', ${g.id})" class="text-xs text-red-400">Hapus</button>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('dash-gifts').innerText = formatRupiah(totalGifts);
+        }
+
+        function renderTargets() {
+            const list = document.getElementById('target-list');
+            list.innerHTML = '';
+            appData.targets.forEach(t => {
+                const percent = Math.min(100, (t.current / t.goal) * 100);
+                const isDone = percent >= 100;
+                list.innerHTML += `
+                    <div class="glass-card p-4 rounded-xl cursor-pointer hover:bg-white/10" onclick="openTargetAction(${t.id})">
+                        <div class="flex justify-between items-end mb-2">
+                            <h4 class="font-bold truncate pr-4">${t.name}</h4>
+                            <span class="text-xs ${isDone ? 'text-emerald-400' : 'text-blue-400'} font-bold">${Math.round(percent)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700/50 h-2 rounded-full overflow-hidden mb-2">
+                            <div class="h-full ${isDone ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-gray-400">
+                            <span>Terkumpul: ${formatRupiah(t.current)}</span>
+                            <span>Target: ${formatRupiah(t.goal)}</span>
                         </div>
                     </div>`;
             });
         }
+        
+        function renderDashboardTrx() {
+            const container = document.getElementById('dashboard-transactions');
+            container.innerHTML = '';
+            const recent = appData.transactions.slice(0, 3);
+            if(recent.length === 0) container.innerHTML = '<p class="text-xs text-gray-600 italic">Belum ada transaksi</p>';
+            
+            recent.forEach(tx => {
+                const isOut = tx.type === 'out';
+                const color = isOut ? 'text-rose-400' : 'text-emerald-400';
+                const sign = isOut ? '-' : '+';
+                container.innerHTML += `
+                    <div class="flex justify-between items-center py-2 border-b border-white/5 last:border-0">
+                        <div>
+                            <p class="text-sm font-bold text-gray-200">${tx.note}</p>
+                            <p class="text-[10px] text-gray-500">${tx.sourceLabel}</p>
+                        </div>
+                        <p class="text-sm font-bold ${color}">${sign} ${formatRupiah(tx.amount)}</p>
+                    </div>
+                `;
+            });
+        }
 
-        // --- MODAL LOGIC ---
-        let modalMode = ''; // wallet, invest, target, debt, gift
-        let activeTargetId = null;
+        // --- TRANSACTION LOGIC ---
+        function openTransactionModal(type) {
+            trxType = type;
+            document.getElementById('trx-modal').classList.remove('hidden');
+            document.getElementById('trx-title').innerText = type === 'in' ? "Catat Pemasukan" : "Catat Pengeluaran";
+            document.getElementById('btn-save-trx').className = `flex-1 py-3 rounded-xl text-white font-bold ${type === 'in' ? 'bg-emerald-600' : 'bg-rose-600'}`;
+            
+            // Populate Source
+            const select = document.getElementById('trx-source');
+            select.innerHTML = '<option value="cash">Cash (Uang Fisik)</option>';
+            appData.accounts.forEach(acc => {
+                select.innerHTML += `<option value="${acc.id}">${acc.name} (${translateType(acc.type)})</option>`;
+            });
+            
+            document.getElementById('trx-amount').value = '';
+            document.getElementById('trx-note').value = '';
+        }
 
-        function openModal(mode) {
+        function closeTrxModal() { document.getElementById('trx-modal').classList.add('hidden'); }
+
+        function saveTransaction() {
+            const amount = getRawValue('trx-amount');
+            const note = document.getElementById('trx-note').value || (trxType === 'in' ? 'Pemasukan' : 'Pengeluaran');
+            const sourceId = document.getElementById('trx-source').value;
+            
+            if(amount <= 0) return alert("Nominal harus > 0");
+
+            // Logic: Update Balance if Account
+            let sourceLabel = 'Cash';
+            if (sourceId !== 'cash') {
+                const accIndex = appData.accounts.findIndex(a => a.id == sourceId);
+                if (accIndex > -1) {
+                    sourceLabel = appData.accounts[accIndex].name;
+                    if (trxType === 'out') appData.accounts[accIndex].balance -= amount;
+                    else appData.accounts[accIndex].balance += amount;
+                }
+            } else {
+                // If Cash, we don't automatically update calculator because we don't know denominations.
+                // Just logging it.
+            }
+
+            // Save Log
+            appData.transactions.unshift({
+                id: Date.now(),
+                date: new Date().toISOString(),
+                type: trxType,
+                amount,
+                note,
+                sourceId,
+                sourceLabel
+            });
+
+            saveData();
+            renderAssets();
+            renderDashboardTrx();
+            closeTrxModal();
+        }
+
+        // --- EDIT & MODAL LOGIC ---
+        let modalMode = ''; 
+        
+        function openModal(mode, editId = null) {
             modalMode = mode;
+            editingId = editId;
             document.getElementById('modal').classList.remove('hidden');
             
-            // Hide all special fields first
+            // Reset Fields
             ['field-provider', 'field-debt-type', 'field-contact', 'field-date', 'field-target-goal'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
-            
-            // Reset Values
             document.getElementById('modal-name').value = '';
             document.getElementById('modal-amount').value = '';
-            document.getElementById('label-amount').innerText = "Nominal (Rp)";
-            document.getElementById('label-name').innerText = "Nama";
+            
+            let title = '';
+            let existingData = null;
 
-            const title = document.getElementById('modal-title');
-            const providerSelect = document.getElementById('modal-provider');
+            // CHECK EDIT MODE
+            if (editId) {
+                if (mode === 'wallet' || mode === 'invest') existingData = appData.accounts.find(x => x.id === editId);
+                else if (mode === 'debt') existingData = appData.debts.find(x => x.id === editId);
+                else if (mode === 'gift') existingData = appData.gifts.find(x => x.id === editId);
+                
+                if(existingData) {
+                    document.getElementById('modal-name').value = existingData.name;
+                    document.getElementById('modal-amount').value = new Intl.NumberFormat('id-ID').format(existingData.amount || existingData.balance);
+                }
+            }
 
+            // SETUP FORM
+            const pSelect = document.getElementById('modal-provider');
             if (mode === 'wallet') {
-                title.innerText = "Tambah Dompet/Bank";
+                title = editId ? "Edit Akun" : "Tambah Akun";
                 document.getElementById('field-provider').classList.remove('hidden');
-                providerSelect.innerHTML = `<option value="wallet">Dompet Digital (Gopay/OVO)</option><option value="bank">Bank (BCA/Mandiri)</option>`;
-                document.getElementById('label-amount').innerText = "Saldo Saat Ini";
-            } 
-            else if (mode === 'invest') {
-                title.innerText = "Tambah Investasi";
+                pSelect.innerHTML = `<option value="wallet">Dompet Digital</option><option value="bank">Bank</option>`;
+                if(editId) pSelect.value = existingData.type;
+            } else if (mode === 'invest') {
+                title = editId ? "Edit Investasi" : "Tambah Investasi";
                 document.getElementById('field-provider').classList.remove('hidden');
-                providerSelect.innerHTML = `<option value="stock">Saham / Reksadana</option><option value="crypto">Crypto</option><option value="gold">Emas</option>`;
-                document.getElementById('label-amount').innerText = "Nilai Aset Sekarang";
-            }
-            else if (mode === 'target') {
-                title.innerText = "Target Impian Baru";
-                document.getElementById('label-name').innerText = "Nama Barang/Tujuan";
-                document.getElementById('label-amount').innerText = "Tabungan Awal (Start)";
-                document.getElementById('field-target-goal').classList.remove('hidden');
-            }
-            else if (mode === 'debt') {
-                title.innerText = "Catat Hutang/Piutang";
+                pSelect.innerHTML = `<option value="stock">Saham</option><option value="crypto">Crypto</option><option value="gold">Emas</option>`;
+                if(editId) pSelect.value = existingData.type;
+            } else if (mode === 'debt') {
+                title = editId ? "Edit Hutang" : "Catat Hutang";
                 document.getElementById('field-debt-type').classList.remove('hidden');
                 document.getElementById('field-contact').classList.remove('hidden');
                 document.getElementById('field-date').classList.remove('hidden');
-            } 
-            else if (mode === 'gift') {
-                title.innerText = "Catat Amplop";
+                if(editId) {
+                    document.getElementById('modal-phone').value = existingData.phone || '';
+                    document.getElementById('modal-date').value = existingData.date;
+                    // Radio button logic
+                    document.querySelector(`input[name="debtType"][value="${existingData.type}"]`).checked = true;
+                }
+            } else if (mode === 'gift') {
+                title = editId ? "Edit Amplop" : "Catat Amplop";
                 document.getElementById('field-date').classList.remove('hidden');
+                if(editId) document.getElementById('modal-date').value = existingData.date;
+            } else if (mode === 'target') {
+                title = "Target Impian";
+                document.getElementById('field-target-goal').classList.remove('hidden');
             }
+
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('btn-save-modal').innerText = editId ? "Update" : "Simpan";
         }
 
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         function saveModalData() {
             const name = document.getElementById('modal-name').value;
-            const amount = parseInt(document.getElementById('modal-amount').value) || 0;
-            const id = Date.now();
-            
+            const amount = getRawValue('modal-amount');
             if (!name) return alert("Nama wajib diisi!");
 
-            if (modalMode === 'wallet' || modalMode === 'invest') {
-                const type = document.getElementById('modal-provider').value;
-                appData.accounts.push({ id, name, type, balance: amount });
+            // EDIT EXISTING
+            if (editingId) {
+                if (modalMode === 'wallet' || modalMode === 'invest') {
+                    const acc = appData.accounts.find(x => x.id === editingId);
+                    acc.name = name;
+                    acc.balance = amount;
+                    acc.type = document.getElementById('modal-provider').value;
+                } else if (modalMode === 'debt') {
+                    const d = appData.debts.find(x => x.id === editingId);
+                    d.name = name;
+                    d.amount = amount;
+                    d.type = document.querySelector('input[name="debtType"]:checked').value;
+                    d.phone = document.getElementById('modal-phone').value;
+                    d.date = document.getElementById('modal-date').value;
+                } else if (modalMode === 'gift') {
+                    const g = appData.gifts.find(x => x.id === editingId);
+                    g.name = name;
+                    g.amount = amount;
+                    g.date = document.getElementById('modal-date').value;
+                }
             } 
-            else if (modalMode === 'target') {
-                const goal = parseInt(document.getElementById('modal-goal-amount').value) || 0;
-                appData.targets.push({ id, name, current: amount, goal });
-            }
-            else if (modalMode === 'debt') {
-                const type = document.querySelector('input[name="debtType"]:checked').value;
-                const date = document.getElementById('modal-date').value;
-                const phone = document.getElementById('modal-phone').value;
-                const social = document.getElementById('modal-social').value;
-                appData.debts.unshift({ id, type, name, amount, date, phone, social });
-            }
-            else if (modalMode === 'gift') {
-                const date = document.getElementById('modal-date').value;
-                appData.gifts.unshift({ id, name, amount, date });
+            // CREATE NEW
+            else {
+                const id = Date.now();
+                if (modalMode === 'wallet' || modalMode === 'invest') {
+                    const type = document.getElementById('modal-provider').value;
+                    appData.accounts.push({ id, name, type, balance: amount });
+                } else if (modalMode === 'target') {
+                    const goal = getRawValue('modal-goal-amount');
+                    appData.targets.push({ id, name, current: amount, goal });
+                } else if (modalMode === 'debt') {
+                    const type = document.querySelector('input[name="debtType"]:checked').value;
+                    const date = document.getElementById('modal-date').value;
+                    const phone = document.getElementById('modal-phone').value;
+                    appData.debts.unshift({ id, type, name, amount, date, phone });
+                } else if (modalMode === 'gift') {
+                    const date = document.getElementById('modal-date').value;
+                    appData.gifts.unshift({ id, name, amount, date });
+                }
             }
 
             saveData();
@@ -690,36 +837,29 @@
             renderAssets(); renderTargets(); renderDebts(); renderGifts();
         }
 
-        // Target Action Logic
+        // --- UTILS & CORE ---
         function openTargetAction(id) {
             activeTargetId = id;
-            const t = appData.targets.find(x => x.id === id);
-            document.getElementById('action-target-name').innerText = t.name;
+            document.getElementById('target-action-modal').classList.remove('hidden');
             document.getElementById('action-amount').value = '';
-            document.getElementById('target-modal').classList.remove('hidden');
+            document.getElementById('action-target-name').innerText = appData.targets.find(x => x.id === id).name;
         }
 
         function saveTargetProgress() {
-            const amount = parseInt(document.getElementById('action-amount').value) || 0;
+            const amount = getRawValue('action-amount');
             const t = appData.targets.find(x => x.id === activeTargetId);
-            if(t) {
-                t.current += amount;
+            if(t) { t.current += amount; saveData(); renderTargets(); document.getElementById('target-action-modal').classList.add('hidden'); }
+        }
+
+        function deleteItem(arrName, id) {
+            if(confirm("Hapus data ini?")) {
+                appData[arrName] = appData[arrName].filter(x => x.id !== id);
                 saveData();
-                renderTargets();
-                document.getElementById('target-modal').classList.add('hidden');
+                renderAssets(); renderDebts(); renderGifts();
+                if(arrName === 'targets') { renderTargets(); document.getElementById('target-action-modal').classList.add('hidden'); }
             }
         }
 
-        function deleteTarget() {
-            if(confirm("Hapus impian ini?")) {
-                appData.targets = appData.targets.filter(t => t.id !== activeTargetId);
-                saveData();
-                renderTargets();
-                document.getElementById('target-modal').classList.add('hidden');
-            }
-        }
-
-        // --- CORE & UTILS ---
         function updateCash(key, delta) {
             const current = appData.cash[key] || 0;
             let next = current + delta;
@@ -728,6 +868,7 @@
             renderCalculator();
             saveData();
         }
+
         function setCash(key, val) {
             let num = parseInt(val) || 0;
             if(num < 0) num = 0;
@@ -735,6 +876,7 @@
             renderCalculator();
             saveData();
         }
+
         function calculateCashTotal() {
             let total = 0;
             denominations.forEach(d => total += (appData.cash[`${d.val}-${d.type}`] || 0) * d.val);
@@ -743,28 +885,16 @@
             return total;
         }
 
-        function deleteItem(arrName, id) {
-            if(confirm("Hapus data ini?")) {
-                appData[arrName] = appData[arrName].filter(x => x.id !== id);
-                saveData();
-                renderAssets(); renderDebts(); renderGifts();
-            }
-        }
-
         function updateSummary() {
             const cash = calculateCashTotal();
             const assets = appData.accounts.reduce((acc, curr) => acc + curr.balance, 0);
-            const targets = appData.targets.reduce((acc, curr) => acc + curr.current, 0); // Include savings in targets as assets
+            const targets = appData.targets.reduce((acc, curr) => acc + curr.current, 0);
             const piutang = appData.debts.filter(d => d.type === 'lent').reduce((acc, curr) => acc + curr.amount, 0);
             const hutang = appData.debts.filter(d => d.type === 'borrowed').reduce((acc, curr) => acc + curr.amount, 0);
-
-            // Net Worth = Cash + Bank/Invest + TargetSavings + Piutang - Hutang
+            
+            // Net Worth Formula
             const netWorth = cash + assets + targets + piutang - hutang;
             document.getElementById('header-net-worth').innerText = formatRupiah(netWorth);
-        }
-
-        function formatRupiah(num) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
         }
 
         function getIcon(type, name) {
@@ -775,14 +905,9 @@
             if (type === 'gold') return '<i class="fa-solid fa-ring text-yellow-300"></i>';
             return '<i class="fa-solid fa-sack-dollar text-gray-400"></i>';
         }
-
-        function translateType(t) {
-            const map = { 'wallet': 'Dompet Digital', 'bank': 'Bank', 'stock': 'Saham', 'crypto': 'Crypto', 'gold': 'Emas' };
-            return map[t] || t;
-        }
+        function translateType(t) { return { 'wallet': 'Dompet Digital', 'bank': 'Bank', 'stock': 'Saham', 'crypto': 'Crypto', 'gold': 'Emas' }[t] || t; }
 
         init();
     </script>
 </body>
 </html>
-
