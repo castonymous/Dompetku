@@ -81,7 +81,6 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: transform 0.3s ease-in-out;
         }
-        /* FIX: Tambahin ini biar .hidden beneran jalan */
         #lock-screen.hidden { display: none !important; }
         
         .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--text-primary); transition: 0.2s; }
@@ -219,6 +218,20 @@
                 </div>
             </div>
 
+            <!-- TOTAL KONDANGAN (FITUR BALIK LAGI) -->
+            <div class="glass-card p-3 rounded-2xl flex justify-between items-center mt-2" onclick="switchTab('social', 'gift')">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-pink-500/20 flex items-center justify-center text-pink-400">
+                        <i class="fa-solid fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs opacity-60">Total Amplop Keluar</p>
+                        <p class="font-bold text-lg amount-display text-pink-400" id="dash-gifts">Rp 0</p>
+                    </div>
+                </div>
+                <i class="fa-solid fa-chevron-right text-xs opacity-60"></i>
+            </div>
+
             <!-- Recent Transactions -->
             <div class="pb-6">
                 <h3 class="text-xs font-bold opacity-50 mb-3 uppercase tracking-wider">Riwayat Transaksi</h3>
@@ -226,7 +239,7 @@
             </div>
         </div>
 
-        <!-- OTHER VIEWS -->
+        <!-- OTHER VIEWS (Cash, Assets, Target, Social) -->
         <div id="view-cash" class="hidden space-y-4">
             <div class="glass-card p-5 rounded-3xl text-center bg-emerald-900/20 border-emerald-500/20">
                  <p class="text-xs text-emerald-300 uppercase tracking-widest mb-1">Total Fisik</p>
@@ -378,12 +391,9 @@
             } else {
                 const old = localStorage.getItem('iFinancePro');
                 if(old) appData = { ...appData, ...JSON.parse(old) };
-                
-                // FORCE SET PIN 1234 ON FIRST LOAD/MIGRATE
                 if(!appData.settings) appData.settings = {};
                 appData.settings.pin = '1234';
             }
-            
             applyTheme(appData.settings.theme);
             if(appData.settings.pin) showLockScreen();
             else renderAll();
@@ -401,7 +411,6 @@
         }
         function clearPin() { pinBuffer = pinBuffer.slice(0, -1); updatePinDots(); }
         function updatePinDots() { for(let i=1; i<=4; i++) document.getElementById(`dot-${i}`).className = `pin-dot ${i <= pinBuffer.length ? 'filled' : ''}`; }
-        
         function setupPin() {
             const newPin = prompt("Buat 4 digit PIN baru:");
             if(newPin && newPin.length === 4 && !isNaN(newPin)) {
@@ -666,9 +675,21 @@
         function deleteItem(arr, id) { if(confirm("Hapus?")) { appData[arr]=appData[arr].filter(x=>x.id!=id); saveData(); renderAll(); } }
         function updateSummary() {
             const cash = calcCashTotal();
-            const assets = appData.accounts.reduce((a,c)=>a+c.balance,0);
+            
+            const wallet = appData.accounts.filter(a => !['stock','crypto','gold','invest'].includes(a.type)).reduce((a,c)=>a+c.balance,0);
+            const invest = appData.accounts.filter(a => ['stock','crypto','gold','invest'].includes(a.type)).reduce((a,c)=>a+c.balance,0);
+            
             const lent = appData.debts.filter(d=>d.type==='lent').reduce((a,c)=>a+c.amount,0);
-            document.getElementById('header-net-worth').innerText = formatRupiah(cash+assets+lent);
+            const gifts = appData.gifts.reduce((a,c)=>a+c.amount,0);
+
+            document.getElementById('header-net-worth').innerText = formatRupiah(cash+wallet+invest+lent);
+            
+            if(document.getElementById('dash-wallet')) document.getElementById('dash-wallet').innerText = formatRupiah(wallet);
+            if(document.getElementById('dash-invest')) document.getElementById('dash-invest').innerText = formatRupiah(invest);
+            if(document.getElementById('dash-receivable')) document.getElementById('dash-receivable').innerText = formatRupiah(lent);
+            if(document.getElementById('dash-gifts')) document.getElementById('dash-gifts').innerText = formatRupiah(gifts);
+            
+            if(privacyMode) { document.querySelectorAll('.amount-display').forEach(el => el.classList.add('blur-amount')); }
         }
         function switchTab(v,s) { 
             ['dashboard','cash','assets','target','social'].forEach(id=>document.getElementById(`view-${id}`).classList.add('hidden'));
