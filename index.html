@@ -2,380 +2,677 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dompet Pintar - Catat Keuangan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iFinance Glass</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .card-enter { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&family=Inter:wght@400;600&display=swap');
+
+        /* --- APPLE LIQUID GLASS THEME --- */
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: #000;
+            color: white;
+            overflow-x: hidden;
         }
+
+        /* Fluid Background Animation */
+        .ambient-light {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: 
+                radial-gradient(circle at 10% 20%, rgba(68, 55, 255, 0.4) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 48, 100, 0.3) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(48, 207, 255, 0.2) 0%, transparent 60%);
+            filter: blur(60px);
+            animation: pulse 10s infinite alternate;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        /* Glassmorphism Components */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .glass-card:active {
+            transform: scale(0.98);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .glass-input:focus {
+            outline: none;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Utilities */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Floating Bottom Nav */
+        .dock {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-item.active i { color: #60a5fa; text-shadow: 0 0 10px rgba(96, 165, 250, 0.6); }
+        .nav-item.active span { color: #60a5fa; }
+
     </style>
 </head>
-<body class="pb-32 bg-gray-50">
+<body class="pb-24">
 
-    <!-- Navbar Sticky -->
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-30 px-4 py-3 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-2">
-            <div class="bg-blue-600 text-white w-8 h-8 rounded-lg flex items-center justify-center">
-                <i class="fa-solid fa-vault"></i>
+    <!-- Background -->
+    <div class="ambient-light"></div>
+
+    <!-- Header -->
+    <header class="sticky top-0 z-40 pt-4 pb-2 px-5 glass-panel border-t-0 border-x-0 rounded-b-3xl">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                    <i class="fa-brands fa-apple text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight">iFinance</h1>
+                    <p class="text-[10px] text-gray-400 uppercase tracking-widest">Net Worth Ecosystem</p>
+                </div>
             </div>
-            <h1 class="font-bold text-gray-800">Dompet Pintar</h1>
+            <div class="text-right">
+                <p class="text-gray-400 text-xs mb-1">Total Aset</p>
+                <h2 class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-purple-300" id="header-net-worth">Rp 0</h2>
+            </div>
         </div>
-        <div class="text-right">
-            <p class="text-[10px] text-gray-500 uppercase tracking-wide">Saldo Saat Ini</p>
-            <p class="font-bold text-blue-600 text-lg" id="global-balance">Rp 0</p>
-        </div>
-    </nav>
+    </header>
 
-    <main class="max-w-md mx-auto p-4 space-y-6">
+    <main class="p-5 space-y-6 min-h-screen">
 
-        <!-- Tab Switcher -->
-        <div class="flex p-1 bg-gray-200 rounded-xl">
-            <button onclick="switchTab('calculator')" id="tab-calc" class="flex-1 py-2 text-sm font-semibold rounded-lg bg-white shadow text-gray-800 transition-all">
-                <i class="fa-solid fa-calculator mr-1"></i> Hitung
-            </button>
-            <button onclick="switchTab('history')" id="tab-hist" class="flex-1 py-2 text-sm font-semibold rounded-lg text-gray-500 hover:text-gray-700 transition-all">
-                <i class="fa-solid fa-clock-rotate-left mr-1"></i> Riwayat
-            </button>
-        </div>
-
-        <!-- SECTION 1: CALCULATOR -->
-        <div id="section-calculator" class="space-y-4">
-            
-            <!-- Tipe Transaksi Toggle -->
+        <!-- VIEW: DASHBOARD (Summary) -->
+        <div id="view-dashboard" class="space-y-6 animate-fade-in">
+            <!-- Asset Cards -->
             <div class="grid grid-cols-2 gap-3">
-                <label class="cursor-pointer">
-                    <input type="radio" name="transType" value="in" class="peer sr-only" checked onchange="updateTheme()">
-                    <div class="peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-600 bg-white border border-gray-200 text-gray-500 rounded-xl p-3 text-center transition-all">
-                        <i class="fa-solid fa-arrow-down mb-1 block"></i>
-                        <span class="font-bold text-sm">Pemasukan</span>
+                <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-32 relative overflow-hidden group" onclick="switchTab('cash')">
+                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-emerald-500/20 rounded-full blur-xl group-hover:bg-emerald-500/30 transition"></div>
+                    <i class="fa-solid fa-money-bill-wave text-emerald-400 text-2xl mb-2"></i>
+                    <div>
+                        <p class="text-xs text-gray-400">Uang Fisik</p>
+                        <p class="font-bold text-lg" id="dash-cash">Rp 0</p>
                     </div>
-                </label>
-                <label class="cursor-pointer">
-                    <input type="radio" name="transType" value="out" class="peer sr-only" onchange="updateTheme()">
-                    <div class="peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600 bg-white border border-gray-200 text-gray-500 rounded-xl p-3 text-center transition-all">
-                        <i class="fa-solid fa-arrow-up mb-1 block"></i>
-                        <span class="font-bold text-sm">Pengeluaran</span>
+                </div>
+                <div class="glass-card p-4 rounded-2xl flex flex-col justify-between h-32 relative overflow-hidden group" onclick="switchTab('digital')">
+                    <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-blue-500/20 rounded-full blur-xl group-hover:bg-blue-500/30 transition"></div>
+                    <i class="fa-solid fa-wallet text-blue-400 text-2xl mb-2"></i>
+                    <div>
+                        <p class="text-xs text-gray-400">Digital & Bank</p>
+                        <p class="font-bold text-lg" id="dash-digital">Rp 0</p>
                     </div>
-                </label>
-            </div>
-
-            <!-- Total Input Display -->
-            <div id="display-card" class="bg-emerald-600 rounded-2xl p-5 text-white shadow-lg transition-colors duration-300">
-                <p class="text-emerald-100 text-xs font-medium mb-1 uppercase tracking-wide" id="display-label">Total Uang Fisik</p>
-                <h2 class="text-3xl font-bold tracking-tight" id="grand-total">Rp 0</h2>
-                <div class="mt-4 pt-4 border-t border-white/20 flex gap-2">
-                    <input type="text" id="note-input" placeholder="Catatan (cth: Gajian / Belanja)" class="flex-1 bg-white/20 placeholder-emerald-100/70 text-white text-sm px-3 py-2 rounded-lg focus:outline-none focus:bg-white/30 border border-transparent focus:border-white/40">
+                </div>
+                <div class="glass-card p-4 rounded-2xl col-span-2 flex flex-col justify-between h-24 relative overflow-hidden group" onclick="switchTab('invest')">
+                    <div class="absolute -right-4 -top-4 w-32 h-32 bg-purple-500/20 rounded-full blur-xl group-hover:bg-purple-500/30 transition"></div>
+                    <div class="flex justify-between items-center z-10">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                <i class="fa-solid fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-400">Investasi</p>
+                                <p class="font-bold text-xl" id="dash-invest">Rp 0</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-gray-600"></i>
+                    </div>
                 </div>
             </div>
 
-            <!-- Money Inputs -->
-            <div class="space-y-6 pb-20">
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Uang Kertas</h3>
-                    <div class="space-y-2" id="paper-container"></div>
+            <!-- Top Targets Teaser -->
+            <div>
+                <div class="flex justify-between items-end mb-3">
+                    <h3 class="font-semibold text-gray-200">Target Impian</h3>
+                    <button onclick="switchTab('targets')" class="text-xs text-blue-400">Lihat Semua</button>
                 </div>
-                <div>
-                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 ml-1">Uang Koin</h3>
-                    <div class="space-y-2" id="coin-container"></div>
+                <div class="space-y-3" id="dashboard-targets">
+                    <!-- Injected via JS -->
                 </div>
             </div>
         </div>
 
-        <!-- SECTION 2: HISTORY -->
-        <div id="section-history" class="hidden space-y-4">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold text-gray-700">Transaksi Terakhir</h3>
-                <button onclick="clearHistory()" class="text-xs text-red-500 hover:text-red-700">Hapus Semua</button>
+        <!-- VIEW: CASH CALCULATOR (Modified from previous) -->
+        <div id="view-cash" class="hidden space-y-5 animate-fade-in">
+            <div class="glass-panel p-5 rounded-3xl text-center relative overflow-hidden">
+                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-green-300"></div>
+                 <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Fisik Di Tangan</p>
+                 <h2 class="text-3xl font-bold text-emerald-300" id="calc-total">Rp 0</h2>
+                 <p class="text-[10px] text-gray-500 mt-2">Otomatis update ke "Total Aset"</p>
             </div>
-            <div id="history-list" class="space-y-3 pb-20">
-                <!-- History Items Injected Here -->
-                <div class="text-center py-10 text-gray-400">
-                    <i class="fa-solid fa-receipt text-4xl mb-3 opacity-30"></i>
-                    <p>Belum ada transaksi</p>
+
+            <div class="space-y-3" id="money-inputs">
+                <!-- JS Generated -->
+            </div>
+        </div>
+
+        <!-- VIEW: DIGITAL & BANK -->
+        <div id="view-digital" class="hidden space-y-5 animate-fade-in">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold">Dompet Digital</h3>
+                <button onclick="openModal('digital')" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white shadow-lg hover:scale-110 transition"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            
+            <div id="digital-list" class="space-y-3">
+                <!-- JS Generated -->
+            </div>
+        </div>
+
+        <!-- VIEW: INVESTMENTS -->
+        <div id="view-invest" class="hidden space-y-5 animate-fade-in">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-bold">Portofolio Investasi</h3>
+                <button onclick="openModal('invest')" class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white shadow-lg hover:scale-110 transition"><i class="fa-solid fa-plus"></i></button>
+            </div>
+            
+            <div id="invest-list" class="space-y-3">
+                <!-- JS Generated -->
+            </div>
+        </div>
+
+        <!-- VIEW: TARGETS (Unlimited) -->
+        <div id="view-targets" class="hidden space-y-5 animate-fade-in">
+            <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 mb-4">
+                <div class="flex-1">
+                    <p class="text-xs text-gray-400">Total Progres</p>
+                    <div class="w-full bg-gray-700/50 h-2 rounded-full mt-2 overflow-hidden">
+                        <div id="global-progress-bar" class="h-full bg-gradient-to-r from-blue-400 to-purple-400 w-0 transition-all duration-1000"></div>
+                    </div>
                 </div>
+                <button onclick="openModal('target')" class="bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg text-sm font-semibold transition">+ Target</button>
+            </div>
+
+            <!-- Filter / Search (For 100+ items) -->
+            <div class="relative">
+                <i class="fa-solid fa-search absolute left-3 top-3 text-gray-500 text-xs"></i>
+                <input type="text" id="target-search" oninput="renderTargets()" placeholder="Cari impian..." class="w-full glass-input rounded-xl py-2 pl-9 pr-4 text-sm placeholder-gray-500">
+            </div>
+
+            <div id="target-list" class="grid grid-cols-1 gap-3 pb-20">
+                <!-- JS Generated -->
             </div>
         </div>
 
     </main>
 
-    <!-- Bottom Action Bar -->
-    <div id="action-bar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-40 transition-transform duration-300">
-        <div class="max-w-md mx-auto flex gap-3">
-            <button onclick="resetInputs()" class="px-4 py-3 rounded-xl bg-gray-100 text-gray-600 font-semibold hover:bg-gray-200 transition">
-                <i class="fa-solid fa-rotate-left"></i>
-            </button>
-            <button onclick="saveTransaction()" id="btn-save" class="flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-700 active:scale-95 transition flex items-center justify-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan Transaksi
-            </button>
+    <!-- DOCK NAVIGATION -->
+    <nav class="dock fixed bottom-0 left-0 right-0 px-6 py-4 flex justify-between items-center z-50 rounded-t-3xl">
+        <button onclick="switchTab('dashboard')" class="nav-item active flex flex-col items-center gap-1 text-gray-500 transition-all duration-300" id="nav-dashboard">
+            <i class="fa-solid fa-house text-xl"></i>
+            <span class="text-[10px] font-medium">Home</span>
+        </button>
+        <button onclick="switchTab('cash')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition-all duration-300" id="nav-cash">
+            <i class="fa-solid fa-money-bill text-xl"></i>
+            <span class="text-[10px] font-medium">Cash</span>
+        </button>
+        <button onclick="switchTab('digital')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition-all duration-300" id="nav-digital">
+            <i class="fa-solid fa-wallet text-xl"></i>
+            <span class="text-[10px] font-medium">Dompet</span>
+        </button>
+        <button onclick="switchTab('invest')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition-all duration-300" id="nav-invest">
+            <i class="fa-solid fa-chart-pie text-xl"></i>
+            <span class="text-[10px] font-medium">Invest</span>
+        </button>
+        <button onclick="switchTab('targets')" class="nav-item flex flex-col items-center gap-1 text-gray-500 transition-all duration-300" id="nav-targets">
+            <i class="fa-solid fa-bullseye text-xl"></i>
+            <span class="text-[10px] font-medium">Target</span>
+        </button>
+    </nav>
+
+    <!-- UNIVERSAL MODAL (Add Wallet / Target / Invest) -->
+    <div id="modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[60] flex items-end sm:items-center justify-center">
+        <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6 transform transition-transform duration-300 slide-up">
+            <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-6"></div>
+            
+            <h3 class="text-xl font-bold mb-4" id="modal-title">Tambah Item</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-xs text-gray-400 uppercase">Nama</label>
+                    <input type="text" id="modal-name" class="w-full glass-input p-3 rounded-xl mt-1" placeholder="cth: Gopay / Beli Mobil">
+                </div>
+                
+                <div id="modal-field-provider" class="hidden">
+                    <label class="text-xs text-gray-400 uppercase">Provider</label>
+                    <select id="modal-provider" class="w-full glass-input p-3 rounded-xl mt-1 bg-black">
+                        <option value="wallet">Dompet Digital</option>
+                        <option value="bank">Bank</option>
+                        <option value="crypto">Crypto</option>
+                        <option value="stock">Saham</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-400 uppercase" id="modal-amount-label">Saldo Saat Ini</label>
+                    <input type="number" id="modal-amount" class="w-full glass-input p-3 rounded-xl mt-1" placeholder="0">
+                </div>
+
+                <div id="modal-field-target" class="hidden">
+                    <label class="text-xs text-gray-400 uppercase">Target Harga</label>
+                    <input type="number" id="modal-target-val" class="w-full glass-input p-3 rounded-xl mt-1" placeholder="0">
+                </div>
+
+                <div class="flex gap-3 mt-6">
+                    <button onclick="closeModal()" class="flex-1 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-gray-300">Batal</button>
+                    <button onclick="saveModalData()" class="flex-1 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold shadow-lg shadow-blue-500/30">Simpan</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed top-20 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none z-50 text-sm font-medium flex items-center gap-2">
-        <i class="fa-solid fa-circle-check text-green-400"></i>
-        <span>Data Berhasil Disimpan!</span>
+    <!-- Edit/Deposit Modal for Targets -->
+    <div id="target-action-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[60] flex items-end sm:items-center justify-center">
+        <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl p-6">
+             <h3 class="text-lg font-bold mb-2" id="action-target-name">Target</h3>
+             <p class="text-xs text-gray-400 mb-4">Tambah tabungan untuk target ini</p>
+             
+             <input type="number" id="action-amount" class="w-full glass-input p-3 rounded-xl mb-4" placeholder="Jumlah Nabung">
+             
+             <div class="grid grid-cols-2 gap-3">
+                 <button onclick="deleteTarget()" class="py-3 rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500/30">Hapus Target</button>
+                 <button onclick="saveTargetProgress()" class="py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 shadow-lg shadow-emerald-500/30">Nabung</button>
+             </div>
+             <button onclick="document.getElementById('target-action-modal').classList.add('hidden')" class="w-full mt-3 py-2 text-gray-500 text-sm">Batal</button>
+        </div>
     </div>
 
     <script>
-        // --- KONFIGURASI DATA ---
+        // --- DATA STATE ---
+        let appData = {
+            cash: {}, // Stores denomination counts { "100000-paper": 5, ... }
+            accounts: [], // { id, name, type: 'wallet'|'bank'|'invest', balance, icon }
+            targets: [] // { id, name, current: 0, goal: 1000000 }
+        };
+
         const denominations = [
-            { value: 100000, type: 'paper', label: '100.000', color: 'text-red-600' },
-            { value: 50000, type: 'paper', label: '50.000', color: 'text-blue-600' },
-            { value: 20000, type: 'paper', label: '20.000', color: 'text-green-600' },
-            { value: 10000, type: 'paper', label: '10.000', color: 'text-purple-600' },
-            { value: 5000, type: 'paper', label: '5.000', color: 'text-yellow-700' },
-            { value: 2000, type: 'paper', label: '2.000', color: 'text-gray-600' },
-            { value: 1000, type: 'paper', label: '1.000 (Kertas)', color: 'text-emerald-700' },
-            { value: 1000, type: 'coin', label: '1.000 (Koin)', color: 'text-yellow-600' },
-            { value: 500, type: 'coin', label: '500', color: 'text-gray-600' },
-            { value: 200, type: 'coin', label: '200', color: 'text-gray-600' },
-            { value: 100, type: 'coin', label: '100', color: 'text-gray-600' },
+            { val: 100000, type: 'paper', label: '100K' },
+            { val: 50000, type: 'paper', label: '50K' },
+            { val: 20000, type: 'paper', label: '20K' },
+            { val: 10000, type: 'paper', label: '10K' },
+            { val: 5000, type: 'paper', label: '5K' },
+            { val: 2000, type: 'paper', label: '2K' },
+            { val: 1000, type: 'paper', label: '1K Kertas' },
+            { val: 1000, type: 'coin', label: '1K Koin' },
+            { val: 500, type: 'coin', label: '500' },
+            { val: 200, type: 'coin', label: '200' },
+            { val: 100, type: 'coin', label: '100' }
         ];
 
-        let currentTotal = 0;
-
-        // --- INIT UI ---
+        // --- INIT ---
         function init() {
-            const paperContainer = document.getElementById('paper-container');
-            const coinContainer = document.getElementById('coin-container');
+            // Load from LocalStorage
+            const saved = localStorage.getItem('iFinanceData');
+            if (saved) {
+                appData = JSON.parse(saved);
+            } else {
+                // Default seeds
+                appData.accounts = [
+                    { id: 1, name: 'GoPay', type: 'wallet', balance: 0 },
+                    { id: 2, name: 'BCA', type: 'bank', balance: 0 }
+                ];
+            }
+            
+            renderCalculator();
+            renderAccounts();
+            renderTargets();
+            updateSummary();
+        }
 
-            denominations.forEach(denom => {
+        function saveData() {
+            localStorage.setItem('iFinanceData', JSON.stringify(appData));
+            updateSummary();
+        }
+
+        // --- NAVIGATION ---
+        function switchTab(viewName) {
+            // Hide all views
+            ['dashboard', 'cash', 'digital', 'invest', 'targets'].forEach(v => {
+                document.getElementById(`view-${v}`).classList.add('hidden');
+                const btn = document.getElementById(`nav-${v}`);
+                if(btn) btn.classList.remove('active');
+            });
+
+            // Show selected
+            document.getElementById(`view-${viewName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${viewName}`);
+            if(activeBtn) activeBtn.classList.add('active');
+
+            // Refresh renders
+            if(viewName === 'targets') renderTargets();
+            if(viewName === 'digital' || viewName === 'invest') renderAccounts();
+        }
+
+        // --- CALCULATOR LOGIC ---
+        function renderCalculator() {
+            const container = document.getElementById('money-inputs');
+            container.innerHTML = '';
+            
+            denominations.forEach(d => {
+                const key = `${d.val}-${d.type}`;
+                const count = appData.cash[key] || 0;
+                
                 const html = `
-                    <div class="bg-white p-2 rounded-lg border border-gray-200 flex items-center gap-3 shadow-sm hover:border-gray-300 transition-colors">
-                        <div class="w-24 pl-2">
-                            <span class="font-bold ${denom.color}">${denom.label}</span>
-                        </div>
-                        <div class="flex-1 flex items-center gap-2">
-                            <button onclick="adjustVal('${denom.value}-${denom.type}', -1)" class="w-8 h-8 rounded bg-gray-100 text-gray-500 hover:bg-gray-200 flex items-center justify-center font-bold">-</button>
-                            <input type="number" 
-                                id="input-${denom.value}-${denom.type}" 
-                                class="w-full bg-transparent text-center font-bold text-gray-800 focus:outline-none"
-                                placeholder="0" 
-                                value=""
-                                oninput="calculate()"
-                                onfocus="this.select()"
-                            >
-                            <button onclick="adjustVal('${denom.value}-${denom.type}', 1)" class="w-8 h-8 rounded bg-gray-100 text-blue-600 hover:bg-blue-50 flex items-center justify-center font-bold">+</button>
-                        </div>
+                    <div class="glass-card p-2 rounded-xl flex items-center gap-3">
+                        <div class="w-16 font-bold ${d.type === 'paper' ? 'text-emerald-400' : 'text-yellow-400'}">${d.label}</div>
+                        <button onclick="updateCash('${key}', -1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20">-</button>
+                        <input type="number" value="${count === 0 ? '' : count}" 
+                            class="flex-1 bg-transparent text-center font-bold text-white focus:outline-none"
+                            placeholder="0" onchange="setCash('${key}', this.value)">
+                        <button onclick="updateCash('${key}', 1)" class="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20">+</button>
                     </div>
                 `;
-                if (denom.type === 'paper') paperContainer.insertAdjacentHTML('beforeend', html);
-                else coinContainer.insertAdjacentHTML('beforeend', html);
+                container.insertAdjacentHTML('beforeend', html);
             });
-
-            loadHistory();
-            updateGlobalBalance();
+            calculateCashTotal();
         }
 
-        // --- LOGIKA HITUNG ---
-        function adjustVal(idSuffix, delta) {
-            const input = document.getElementById(`input-${idSuffix}`);
-            let val = parseInt(input.value) || 0;
-            val += delta;
-            if (val < 0) val = 0;
-            input.value = val === 0 ? '' : val;
-            calculate();
+        function updateCash(key, delta) {
+            const current = appData.cash[key] || 0;
+            let next = current + delta;
+            if (next < 0) next = 0;
+            appData.cash[key] = next;
+            renderCalculator(); // Re-render to update input value
+            saveData();
+        }
+        
+        function setCash(key, val) {
+            let num = parseInt(val) || 0;
+            if(num < 0) num = 0;
+            appData.cash[key] = num;
+            saveData();
+            calculateCashTotal();
         }
 
-        function calculate() {
+        function calculateCashTotal() {
             let total = 0;
-            denominations.forEach(denom => {
-                const input = document.getElementById(`input-${denom.value}-${denom.type}`);
-                const qty = parseInt(input.value) || 0;
-                total += (qty * denom.value);
+            denominations.forEach(d => {
+                const key = `${d.val}-${d.type}`;
+                total += (appData.cash[key] || 0) * d.val;
             });
-            currentTotal = total;
-            document.getElementById('grand-total').innerText = formatRupiah(total);
+            document.getElementById('calc-total').innerText = formatRupiah(total);
+            document.getElementById('dash-cash').innerText = formatRupiah(total);
+            return total;
         }
 
-        // --- TEMA (IN/OUT) ---
-        function updateTheme() {
-            const type = document.querySelector('input[name="transType"]:checked').value;
-            const card = document.getElementById('display-card');
-            const btn = document.getElementById('btn-save');
-            const note = document.getElementById('note-input');
-            const label = document.getElementById('display-label');
-
-            if (type === 'in') {
-                card.className = "bg-emerald-600 rounded-2xl p-5 text-white shadow-lg transition-colors duration-300";
-                btn.className = "flex-1 bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-emerald-700 transition flex items-center justify-center gap-2";
-                note.placeholder = "Catatan Pemasukan (cth: Gajian)";
-                label.innerText = "Total Pemasukan";
-            } else {
-                card.className = "bg-red-600 rounded-2xl p-5 text-white shadow-lg transition-colors duration-300";
-                btn.className = "flex-1 bg-red-600 text-white font-bold py-3 rounded-xl shadow-lg hover:bg-red-700 transition flex items-center justify-center gap-2";
-                note.placeholder = "Catatan Pengeluaran (cth: Bayar Listrik)";
-                label.innerText = "Total Pengeluaran";
-            }
-        }
-
-        // --- TAB SWITCHER ---
-        function switchTab(tab) {
-            const calcSection = document.getElementById('section-calculator');
-            const histSection = document.getElementById('section-history');
-            const btnCalc = document.getElementById('tab-calc');
-            const btnHist = document.getElementById('tab-hist');
-            const actionBar = document.getElementById('action-bar');
-
-            if (tab === 'calculator') {
-                calcSection.classList.remove('hidden');
-                histSection.classList.add('hidden');
-                btnCalc.classList.replace('text-gray-500', 'text-gray-800');
-                btnCalc.classList.add('bg-white', 'shadow');
-                btnHist.classList.remove('bg-white', 'shadow');
-                btnHist.classList.replace('text-gray-800', 'text-gray-500');
-                actionBar.classList.remove('translate-y-full'); // Show buttons
-            } else {
-                calcSection.classList.add('hidden');
-                histSection.classList.remove('hidden');
-                btnHist.classList.replace('text-gray-500', 'text-gray-800');
-                btnHist.classList.add('bg-white', 'shadow');
-                btnCalc.classList.remove('bg-white', 'shadow');
-                btnCalc.classList.replace('text-gray-800', 'text-gray-500');
-                actionBar.classList.add('translate-y-full'); // Hide buttons
-            }
-        }
-
-        // --- SAVE & HISTORY LOGIC ---
-        function saveTransaction() {
-            if (currentTotal === 0) {
-                alert("Isi jumlah uang dulu bro!");
-                return;
-            }
-
-            const type = document.querySelector('input[name="transType"]:checked').value;
-            const note = document.getElementById('note-input').value || (type === 'in' ? 'Pemasukan' : 'Pengeluaran');
+        // --- ACCOUNTS (DIGITAL / BANK / INVEST) ---
+        function renderAccounts() {
+            const digitalList = document.getElementById('digital-list');
+            const investList = document.getElementById('invest-list');
             
-            // Build details string
-            let details = [];
-            denominations.forEach(denom => {
-                const qty = parseInt(document.getElementById(`input-${denom.value}-${denom.type}`).value) || 0;
-                if (qty > 0) {
-                    details.push(`${qty}x ${denom.label}`);
-                }
-            });
+            digitalList.innerHTML = '';
+            investList.innerHTML = '';
+            
+            let digitalTotal = 0;
+            let investTotal = 0;
 
-            const transaction = {
-                id: Date.now(),
-                date: new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }),
-                type: type,
-                amount: currentTotal,
-                note: note,
-                details: details.join(', ')
-            };
-
-            // Save to LocalStorage
-            let history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
-            history.unshift(transaction); // Add to top
-            localStorage.setItem('moneyHistory', JSON.stringify(history));
-
-            showToast();
-            resetInputs();
-            loadHistory();
-            updateGlobalBalance();
-        }
-
-        function loadHistory() {
-            const list = document.getElementById('history-list');
-            const history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
-
-            if (history.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-10 text-gray-400">
-                        <i class="fa-solid fa-receipt text-4xl mb-3 opacity-30"></i>
-                        <p>Belum ada transaksi</p>
-                    </div>`;
-                return;
-            }
-
-            let html = '';
-            history.forEach(item => {
-                const isPlus = item.type === 'in';
-                const colorClass = isPlus ? 'text-emerald-600' : 'text-red-600';
-                const sign = isPlus ? '+' : '-';
-                const icon = isPlus ? 'fa-arrow-down' : 'fa-arrow-up';
-                const bgIcon = isPlus ? 'bg-emerald-100' : 'bg-red-100';
-
-                html += `
-                    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start card-enter relative group">
-                        <div class="flex gap-3">
-                            <div class="${bgIcon} ${colorClass} w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                                <i class="fa-solid ${icon}"></i>
+            appData.accounts.forEach(acc => {
+                const isInvest = acc.type === 'stock' || acc.type === 'crypto' || acc.type === 'invest';
+                const icon = getIcon(acc.name, acc.type);
+                
+                const html = `
+                    <div class="glass-card p-4 rounded-xl flex justify-between items-center group relative">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-xl">
+                                ${icon}
                             </div>
                             <div>
-                                <p class="font-bold text-gray-800">${item.note}</p>
-                                <p class="text-xs text-gray-400 mb-1">${item.date}</p>
-                                <p class="text-xs text-gray-500 leading-tight">${item.details}</p>
+                                <p class="font-bold">${acc.name}</p>
+                                <p class="text-xs text-gray-400 capitalize">${acc.type}</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="font-bold ${colorClass}">${sign} ${formatRupiah(item.amount)}</p>
-                            <button onclick="deleteItem(${item.id})" class="text-xs text-gray-300 hover:text-red-500 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <i class="fa-solid fa-trash"></i> Hapus
-                            </button>
+                            <p class="font-bold">${formatRupiah(acc.balance)}</p>
+                            <button onclick="deleteAccount(${acc.id})" class="text-xs text-red-400 opacity-0 group-hover:opacity-100 transition">Hapus</button>
                         </div>
                     </div>
                 `;
+
+                if (isInvest) {
+                    investList.insertAdjacentHTML('beforeend', html);
+                    investTotal += acc.balance;
+                } else {
+                    digitalList.insertAdjacentHTML('beforeend', html);
+                    digitalTotal += acc.balance;
+                }
             });
-            list.innerHTML = html;
+
+            document.getElementById('dash-digital').innerText = formatRupiah(digitalTotal);
+            document.getElementById('dash-invest').innerText = formatRupiah(investTotal);
         }
 
-        function updateGlobalBalance() {
-            const history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
-            let balance = 0;
-            history.forEach(item => {
-                if (item.type === 'in') balance += item.amount;
-                else balance -= item.amount;
+        // --- TARGETS ---
+        function renderTargets() {
+            const list = document.getElementById('target-list');
+            const dashList = document.getElementById('dashboard-targets');
+            const search = document.getElementById('target-search').value.toLowerCase();
+            
+            list.innerHTML = '';
+            dashList.innerHTML = '';
+
+            const filtered = appData.targets.filter(t => t.name.toLowerCase().includes(search));
+
+            filtered.forEach((t, index) => {
+                const percent = Math.min(100, (t.current / t.goal) * 100);
+                const isDone = percent >= 100;
+                
+                // Full List Item
+                const html = `
+                    <div class="glass-card p-4 rounded-xl cursor-pointer hover:bg-white/10 transition" onclick="openTargetAction(${t.id})">
+                        <div class="flex justify-between items-end mb-2">
+                            <h4 class="font-bold truncate pr-4">${t.name}</h4>
+                            <span class="text-xs ${isDone ? 'text-emerald-400' : 'text-blue-400'}">${Math.round(percent)}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700/50 h-1.5 rounded-full overflow-hidden mb-2">
+                            <div class="h-full ${isDone ? 'bg-emerald-500' : 'bg-blue-500'}" style="width: ${percent}%"></div>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-400">
+                            <span>${formatRupiah(t.current)}</span>
+                            <span>${formatRupiah(t.goal)}</span>
+                        </div>
+                    </div>
+                `;
+                list.insertAdjacentHTML('beforeend', html);
+
+                // Dashboard Teaser (Top 2)
+                if(index < 2 && search === '') {
+                     const dashHtml = `
+                        <div class="glass-card p-3 rounded-xl flex items-center gap-3">
+                            <div class="flex-1">
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs font-bold">${t.name}</span>
+                                    <span class="text-[10px] text-gray-400">${Math.round(percent)}%</span>
+                                </div>
+                                <div class="w-full bg-gray-700 h-1 rounded-full">
+                                    <div class="h-full bg-blue-400" style="width: ${percent}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    dashList.insertAdjacentHTML('beforeend', dashHtml);
+                }
             });
-            document.getElementById('global-balance').innerText = formatRupiah(balance);
         }
 
-        function deleteItem(id) {
-            if(confirm('Yakin mau hapus data ini? Saldo bakal berubah loh.')) {
-                let history = JSON.parse(localStorage.getItem('moneyHistory')) || [];
-                history = history.filter(item => item.id !== id);
-                localStorage.setItem('moneyHistory', JSON.stringify(history));
-                loadHistory();
-                updateGlobalBalance();
+        // --- MODAL LOGIC ---
+        let currentModalType = '';
+        let activeTargetId = null;
+
+        function openModal(type) {
+            currentModalType = type;
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modal-title');
+            const providerField = document.getElementById('modal-field-provider');
+            const targetField = document.getElementById('modal-field-target');
+            const amountLabel = document.getElementById('modal-amount-label');
+
+            // Reset inputs
+            document.getElementById('modal-name').value = '';
+            document.getElementById('modal-amount').value = '';
+            document.getElementById('modal-target-val').value = '';
+
+            modal.classList.remove('hidden');
+            providerField.classList.add('hidden');
+            targetField.classList.add('hidden');
+
+            if (type === 'digital') {
+                title.innerText = "Tambah Dompet / Bank";
+                providerField.classList.remove('hidden');
+                document.getElementById('modal-provider').innerHTML = `
+                    <option value="wallet">Dompet Digital (Gopay/OVO)</option>
+                    <option value="bank">Bank (BCA/Mandiri/Jago)</option>
+                `;
+                amountLabel.innerText = "Saldo Awal";
+            } else if (type === 'invest') {
+                title.innerText = "Tambah Aset Investasi";
+                providerField.classList.remove('hidden');
+                document.getElementById('modal-provider').innerHTML = `
+                    <option value="stock">Saham / Reksadana</option>
+                    <option value="crypto">Crypto</option>
+                    <option value="gold">Emas</option>
+                `;
+                amountLabel.innerText = "Nilai Aset Sekarang";
+            } else if (type === 'target') {
+                title.innerText = "Impian Baru";
+                targetField.classList.remove('hidden');
+                amountLabel.innerText = "Tabungan Saat Ini (Start)";
             }
         }
 
-        function clearHistory() {
-            if(confirm('Hapus SEMUA riwayat? Data gak bisa balik lagi.')) {
-                localStorage.removeItem('moneyHistory');
-                loadHistory();
-                updateGlobalBalance();
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('target-action-modal').classList.add('hidden');
+        }
+
+        function saveModalData() {
+            const name = document.getElementById('modal-name').value;
+            const amount = parseInt(document.getElementById('modal-amount').value) || 0;
+            
+            if (!name) return alert("Nama wajib diisi!");
+
+            if (currentModalType === 'target') {
+                const targetVal = parseInt(document.getElementById('modal-target-val').value) || 0;
+                appData.targets.push({
+                    id: Date.now(),
+                    name: name,
+                    current: amount,
+                    goal: targetVal
+                });
+            } else {
+                const type = document.getElementById('modal-provider').value;
+                appData.accounts.push({
+                    id: Date.now(),
+                    name: name,
+                    type: type,
+                    balance: amount
+                });
+            }
+
+            saveData();
+            closeModal();
+            renderAccounts();
+            renderTargets();
+            updateSummary();
+        }
+
+        function openTargetAction(id) {
+            activeTargetId = id;
+            const target = appData.targets.find(t => t.id === id);
+            document.getElementById('action-target-name').innerText = target.name;
+            document.getElementById('action-amount').value = '';
+            document.getElementById('target-action-modal').classList.remove('hidden');
+        }
+
+        function saveTargetProgress() {
+            const amount = parseInt(document.getElementById('action-amount').value) || 0;
+            const target = appData.targets.find(t => t.id === activeTargetId);
+            
+            if(target) {
+                target.current += amount;
+                saveData();
+                renderTargets();
+                closeModal();
             }
         }
 
-        // --- UTILS ---
-        function resetInputs() {
-            const inputs = document.querySelectorAll('input[type="number"]');
-            inputs.forEach(input => input.value = '');
-            document.getElementById('note-input').value = '';
-            calculate();
+        function deleteTarget() {
+            if(confirm("Hapus impian ini?")) {
+                appData.targets = appData.targets.filter(t => t.id !== activeTargetId);
+                saveData();
+                renderTargets();
+                closeModal();
+            }
+        }
+        
+        function deleteAccount(id) {
+            if(confirm("Hapus akun ini?")) {
+                appData.accounts = appData.accounts.filter(a => a.id !== id);
+                saveData();
+                renderAccounts();
+                updateSummary();
+            }
         }
 
-        function formatRupiah(number) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        // --- HELPERS ---
+        function updateSummary() {
+            const cash = calculateCashTotal();
+            let digital = 0;
+            let invest = 0;
+            
+            appData.accounts.forEach(acc => {
+                if (['stock', 'crypto', 'gold', 'invest'].includes(acc.type)) {
+                    invest += acc.balance;
+                } else {
+                    digital += acc.balance;
+                }
+            });
+
+            const total = cash + digital + invest;
+            document.getElementById('header-net-worth').innerText = formatRupiah(total);
         }
 
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.remove('opacity-0');
-            setTimeout(() => toast.classList.add('opacity-0'), 2000);
+        function formatRupiah(num) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(num);
         }
 
-        // --- START ---
+        function getIcon(name, type) {
+            name = name.toLowerCase();
+            if (name.includes('gopay')) return '<i class="fa-solid fa-wallet text-blue-400"></i>';
+            if (name.includes('ovo')) return '<i class="fa-solid fa-circle text-purple-500"></i>';
+            if (name.includes('shopee')) return '<i class="fa-solid fa-bag-shopping text-orange-500"></i>';
+            if (name.includes('bca')) return '<i class="fa-solid fa-building-columns text-blue-600"></i>';
+            if (type === 'crypto') return '<i class="fa-brands fa-bitcoin text-yellow-500"></i>';
+            if (type === 'stock') return '<i class="fa-solid fa-arrow-trend-up text-green-500"></i>';
+            if (type === 'gold') return '<i class="fa-solid fa-coins text-yellow-300"></i>';
+            return '<i class="fa-solid fa-credit-card text-gray-400"></i>';
+        }
+
+        // Start
         init();
-        updateTheme(); // set initial theme
     </script>
 </body>
 </html>
