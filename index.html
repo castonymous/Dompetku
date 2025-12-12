@@ -350,10 +350,12 @@
                 const k = `${d.val}-${d.type}`; const count = appData.cash[k] || 0;
                 c.innerHTML += `
                     <div class="glass-card p-3 rounded-xl flex items-center justify-between gap-3">
-                        <div class="flex flex-col w-20"><span class="font-bold ${d.color} text-lg">${d.label}</span></div>
-                        <div class="flex items-center gap-2 bg-black/30 rounded-lg p-1 flex-1">
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <span class="font-bold ${d.color} text-lg truncate">${d.label}</span>
+                        </div>
+                        <div class="flex items-center gap-1 bg-black/30 rounded-lg p-1">
                             <button onclick="updateCash('${k}', -1)" class="w-10 h-10 rounded-lg bg-white/10 active:bg-white/20 font-bold">-</button>
-                            <input type="number" value="${count||''}" placeholder="0" class="flex-1 bg-transparent text-center font-bold text-white focus:outline-none text-lg min-w-0" onchange="setCash('${k}', this.value)">
+                            <input type="number" value="${count||''}" placeholder="0" class="w-16 bg-transparent text-center font-bold text-white focus:outline-none text-lg" onchange="setCash('${k}', this.value)">
                             <button onclick="updateCash('${k}', 1)" class="w-10 h-10 rounded-lg bg-white/10 active:bg-white/20 font-bold">+</button>
                         </div>
                     </div>`;
