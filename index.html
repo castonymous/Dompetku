@@ -81,6 +81,9 @@
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             transition: transform 0.3s ease-in-out;
         }
+        /* FIX: Tambahin ini biar .hidden beneran jalan */
+        #lock-screen.hidden { display: none !important; }
+        
         .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--text-primary); transition: 0.2s; }
         .pin-dot.filled { background: var(--text-primary); }
     </style>
