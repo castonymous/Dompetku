@@ -112,7 +112,7 @@
             <button onclick="enterPin(7)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">7</button>
             <button onclick="enterPin(8)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">8</button>
             <button onclick="enterPin(9)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">9</button>
-            <div class="flex items-center justify-center"><button onclick="emergencyReset()" class="text-[10px] text-red-500 font-bold opacity-50 hover:opacity-100">LUPA<br>PIN?</button></div>
+            <div class="flex items-center justify-center"><button onclick="emergencyReset()" class="text-[10px] text-red-500 font-bold opacity-50 hover:opacity-100">RESET<br>PIN</button></div>
             <button onclick="enterPin(0)" class="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center">0</button>
             <button onclick="clearPin()" class="w-16 h-16 flex items-center justify-center text-xl"><i class="fa-solid fa-delete-left"></i></button>
         </div>
@@ -347,6 +347,16 @@
         </div>
     </div>
 
+    <!-- TARGET ACTION MODAL -->
+    <div id="target-action-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden z-[65] flex items-end justify-center">
+        <div class="glass-panel w-full sm:max-w-sm rounded-t-3xl p-6">
+             <h3 class="text-lg font-bold mb-2" id="action-target-name">Target</h3>
+             <input type="text" inputmode="numeric" id="action-amount" class="glass-input p-3 rounded-xl mb-4" placeholder="Jumlah Nabung" oninput="formatInput(this)">
+             <div class="grid grid-cols-2 gap-3"><button onclick="deleteItem('targets', activeTargetId)" class="py-3 rounded-xl bg-red-500/20 text-red-400">Hapus</button><button onclick="saveTargetProgress()" class="py-3 rounded-xl bg-emerald-600 text-white font-bold">Nabung</button></div>
+             <button onclick="document.getElementById('target-action-modal').classList.add('hidden')" class="w-full mt-3 py-2 text-gray-500 text-sm">Batal</button>
+        </div>
+    </div>
+
     <script>
         // --- DATA STATE ---
         let appData = { 
@@ -374,10 +384,12 @@
                 // Migration from Pro
                 const old = localStorage.getItem('iFinancePro');
                 if(old) appData = { ...appData, ...JSON.parse(old) };
+                
+                // FORCE RESET PIN SAAT MIGRASI
+                if(appData.settings) appData.settings.pin = null;
             }
             
             // --- SECURITY FIX: Auto Sanitization ---
-            // Kalau PIN-nya aneh (bukan string 4 digit), kita hapus biar ga kekunci
             if (appData.settings.pin && (typeof appData.settings.pin !== 'string' || appData.settings.pin.length !== 4)) {
                 console.warn("Invalid PIN detected, resetting to null");
                 appData.settings.pin = null;
@@ -422,8 +434,8 @@
             }
         }
 
-        function saveData() { localStorage.setItem('iFinanceUltra', JSON.stringify(appData)); updateSummary(); updateAnalytics(); }
-        function renderAll() { renderCalculator(); renderAssets(); renderTargets(); renderDebts(); renderGifts(); renderTrx(); updateSummary(); updateAnalytics(); }
+        function saveData() { localStorage.setItem('iFinanceUltra', JSON.stringify(appData)); updateSummary(); renderAnalytics(); }
+        function renderAll() { renderCalculator(); renderAssets(); renderTargets(); renderDebts(); renderGifts(); renderTrx(); updateSummary(); renderAnalytics(); }
 
         // --- AI LOGIC (LOCAL) ---
         function detectCategory(note) {
@@ -504,6 +516,22 @@
             link.click();
         }
 
+        // --- EXPORT/IMPORT JSON ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData));
+            const dlNode = document.createElement('a');
+            dlNode.setAttribute("href", dataStr);
+            dlNode.setAttribute("download", "ifinance_backup_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(dlNode); dlNode.click(); dlNode.remove();
+        }
+        function importData(input) {
+            const file = input.files[0]; if(!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try { const dat = JSON.parse(e.target.result); if(dat.cash && dat.accounts) { if(confirm("Restore data?")) { appData = dat; saveData(); renderAll(); alert("Sukses!"); closeSettings(); } } else alert("File salah!"); } catch(e) { alert("File rusak!"); }
+            }; reader.readAsText(file); input.value = '';
+        }
+
         // --- QUICK ACTIONS ---
         function quickAdd(note, amount, type) {
             openTransactionModal(type);
@@ -536,6 +564,51 @@
 
                 const html = `<div class="glass-card p-4 rounded-xl flex justify-between items-center group relative"><div class="flex items-center gap-3">${getIcon(a.type, a.name)}<div><p class="font-bold">${a.name}</p><p class="text-xs opacity-60 capitalize">${translateType(a.type)}</p></div></div><div class="text-right"><p class="font-bold amount-display">${formatRupiah(a.balance)}</p>${roiHtml}<div class="flex justify-end gap-3 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="openModal('${inv?'invest':'wallet'}', ${a.id})" class="text-xs text-blue-400">Edit</button><button onclick="deleteItem('accounts', ${a.id})" class="text-xs text-red-400">Hapus</button></div></div></div>`;
                 if(inv) i.innerHTML+=html; else w.innerHTML+=html;
+            });
+        }
+
+        // --- RENDER TARGETS ---
+        function renderTargets() {
+            const l = document.getElementById('target-list');
+            l.innerHTML = '';
+            if (appData.targets.length === 0) {
+                l.innerHTML = '<p class="text-center opacity-50 text-xs mt-10">Mulai buat impian pertamamu!</p>';
+                return;
+            }
+            appData.targets.forEach(t => {
+                const pct = Math.min(100, Math.round((t.current / t.goal) * 100));
+                l.innerHTML += `
+                    <div class="glass-card p-4 rounded-xl cursor-pointer" onclick="openTargetAction(${t.id})">
+                        <div class="flex justify-between items-end mb-2">
+                            <h4 class="font-bold truncate pr-4">${t.name}</h4>
+                            <span class="text-xs text-blue-400 font-bold">${pct}%</span>
+                        </div>
+                        <div class="w-full bg-gray-700/50 h-2 rounded-full overflow-hidden mb-2">
+                            <div class="h-full bg-blue-500" style="width:${pct}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] opacity-60">
+                            <span class="amount-display">${formatRupiah(t.current)}</span>
+                            <span class="amount-display">Target: ${formatRupiah(t.goal)}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // --- RENDER DEBTS & GIFTS ---
+        function renderDebts() {
+            const l = document.getElementById('debt-list'); l.innerHTML = '';
+            appData.debts.forEach(d => {
+                const lent = d.type === 'lent';
+                const dateStr = new Date(d.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                l.innerHTML += `<div class="glass-card p-4 rounded-xl flex justify-between relative overflow-hidden"><div class="absolute left-0 top-0 bottom-0 w-1 ${lent?'bg-emerald-500':'bg-red-500'}"></div><div class="pl-2"><div><span class="font-bold">${d.name}</span> <span class="text-[10px] px-2 py-0.5 rounded ${lent?'bg-emerald-500/20 text-emerald-400':'bg-red-500/20 text-red-400'}">${lent?'Dipinjam':'Hutang'}</span></div><p class="text-xs opacity-60 mt-1">${dateStr}</p></div><div class="text-right"><p class="font-bold amount-display">${formatRupiah(d.amount)}</p><button onclick="deleteItem('debts', ${d.id})" class="text-xs text-red-400 mt-1">Lunas</button></div></div>`;
+            });
+        }
+
+        function renderGifts() {
+            const l = document.getElementById('gift-list'); l.innerHTML = '';
+            appData.gifts.forEach(g => {
+                const dateStr = new Date(g.date).toLocaleDateString('id-ID', {day:'numeric', month:'short'});
+                l.innerHTML += `<div class="glass-card p-4 rounded-xl flex justify-between"><div><p class="font-bold">${g.name}</p><p class="text-xs opacity-60">${dateStr}</p></div><div class="text-right"><p class="font-bold text-pink-400 amount-display">${formatRupiah(g.amount)}</p><button onclick="deleteItem('gifts', ${g.id})" class="text-xs text-red-400">Hapus</button></div></div>`;
             });
         }
 
@@ -631,14 +704,27 @@
                 container.innerHTML += `<div class="grid grid-cols-2 gap-2 mt-2"><button id="btn-lent" onclick="setDebtType('lent')" class="p-3 rounded-xl border border-gray-600">Dipinjam</button><button id="btn-borrowed" onclick="setDebtType('borrowed')" class="p-3 rounded-xl border border-gray-600">Hutang</button></div>`;
                 setTimeout(() => setDebtType(ex?.type || 'lent'), 10);
             }
-            // Other modes simplified for brevity...
+            // Target Action
+            if(mode === 'target') {
+                addMoney('Target Nominal', 'modal-goal', ex?.goal);
+                // Initial amount
+                if(!editId) addMoney('Saldo Awal (Opsional)', 'modal-amount', 0);
+            }
+            if(mode === 'gift') {
+                addMoney('Nominal Amplop', 'modal-amount', ex?.amount);
+                // Date picker
+                container.innerHTML += `<div><label class="text-xs opacity-60 uppercase">Tanggal</label><input type="date" id="modal-date" class="glass-input p-3 rounded-xl mt-1" style="color-scheme:dark"></div>`;
+            }
         }
 
         function saveModalData() {
             const name = document.getElementById('modal-name').value;
-            const amt = getRawValue('modal-amount');
-            const buy = document.getElementById('modal-buy') ? getRawValue('modal-buy') : 0;
             
+            // Handle different amount fields
+            let amt = 0;
+            if(document.getElementById('modal-amount')) amt = getRawValue('modal-amount');
+            
+            const buy = document.getElementById('modal-buy') ? getRawValue('modal-buy') : 0;
             const id = editingId || Date.now();
             
             if(modalMode === 'invest' || modalMode === 'wallet') {
@@ -656,12 +742,52 @@
                     appData.debts[idx] = newItem;
                 } else appData.debts.unshift(newItem);
             }
+            else if(modalMode === 'target') {
+                const goal = getRawValue('modal-goal');
+                // If new, current is amt. If edit, keep current.
+                let current = amt;
+                if(editingId) {
+                    const existing = appData.targets.find(x=>x.id==editingId);
+                    current = existing.current; 
+                    const idx = appData.targets.findIndex(x=>x.id==editingId);
+                    appData.targets[idx] = { id, name, current, goal };
+                } else {
+                    appData.targets.push({ id, name, current, goal });
+                }
+            }
+            else if(modalMode === 'gift') {
+                const date = document.getElementById('modal-date').value || new Date().toISOString();
+                const newItem = { id, name, amount: amt, date };
+                if(editingId) {
+                    const idx = appData.gifts.findIndex(x=>x.id==editingId);
+                    appData.gifts[idx] = newItem;
+                } else appData.gifts.unshift(newItem);
+            }
             
             saveData(); closeModal(); renderAll();
         }
 
+        // --- TARGET ACTIONS ---
+        function openTargetAction(id) {
+            activeTargetId = id;
+            document.getElementById('target-action-modal').classList.remove('hidden');
+            document.getElementById('action-amount').value = '';
+            const t = appData.targets.find(x => x.id == id);
+            if(t) document.getElementById('action-target-name').innerText = t.name;
+        }
+
+        function saveTargetProgress() {
+            const amt = getRawValue('action-amount');
+            const t = appData.targets.find(x => x.id == activeTargetId);
+            if (t) {
+                t.current += amt;
+                saveData();
+                renderAll();
+                document.getElementById('target-action-modal').classList.add('hidden');
+            }
+        }
+
         // --- HELPERS ---
-        let currentDebtType = 'lent';
         function setDebtType(t) {
             currentDebtType = t;
             document.getElementById('btn-lent').className = t==='lent' ? "p-3 rounded-xl border border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold" : "p-3 rounded-xl border border-gray-600 opacity-50";
@@ -670,11 +796,14 @@
         function getExistingData(mode, id) {
             if(mode.includes('wallet') || mode.includes('invest')) return appData.accounts.find(x=>x.id==id);
             if(mode === 'debt') return appData.debts.find(x=>x.id==id);
+            if(mode === 'target') return appData.targets.find(x=>x.id==id);
+            if(mode === 'gift') return appData.gifts.find(x=>x.id==id);
             return null;
         }
         function getModalTitle(m, edit) {
             if(m==='invest') return edit ? "Edit Investasi" : "Tambah Investasi";
             if(m==='wallet') return edit ? "Edit Dompet" : "Tambah Dompet";
+            if(m==='target') return edit ? "Edit Target" : "Tambah Target";
             return "Form";
         }
         
